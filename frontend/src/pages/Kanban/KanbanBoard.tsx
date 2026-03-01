@@ -476,6 +476,9 @@ const TaskCard = memo(
     const updatedRelative = formatRelativeTime(task.updated_at ?? task.created_at);
     const updatedTitle = formatDateTimeSmart(task.updated_at ?? task.created_at);
     const assigneeLabel = task.assigned_to_id ?? '—';
+    const dependencyBlocked = Boolean(task.is_dependency_blocked);
+    const isBlocked = Boolean(task.blocked_reason || dependencyBlocked);
+    const isReady = !isBlocked && task.status !== 'done';
     const anchorDisplay = (() => {
       if (!task.resolved_anchor) return null;
       const parts = task.resolved_anchor.split('/').filter(Boolean);
@@ -495,6 +498,7 @@ const TaskCard = memo(
         className={clsx(
           'group w-full rounded-lg border border-[rgb(var(--cb-border))] bg-[rgb(var(--cb-surface))] p-2 text-left shadow-sm will-change-transform hover:border-[rgb(var(--cb-accent)/0.34)] dark:hover:border-[rgb(var(--cb-accent-text)/0.40)]',
           dragging ? 'transition-none shadow-lg ring-1 ring-[rgb(var(--cb-border))]' : 'transition',
+          isBlocked && !dragging ? 'opacity-75' : '',
           isSelected ? 'ring-2 ring-[rgb(var(--cb-accent)/0.2)]' : '',
         )}
       >
@@ -546,6 +550,16 @@ const TaskCard = memo(
                 blocked
               </Chip>
             ) : null}
+            {dependencyBlocked ? (
+              <Chip variant="neutral" className="text-[11px] py-0.5" title="Blocked by one or more dependency tasks">
+                blocked by deps
+              </Chip>
+            ) : null}
+            {isReady ? (
+              <Chip variant="soft" className="text-[11px] py-0.5">
+                ready
+              </Chip>
+            ) : null}
             {Array.isArray(task.tags) && task.tags.length
               ? task.tags.slice(0, 3).map((t) => (
                   <Chip key={t} variant="neutral" className="text-[11px] py-0.5">
@@ -574,7 +588,14 @@ const TaskCard = memo(
                 value={task.context_key}
               />
             ) : null}
-            {task.blocked_reason ? <MetaRow icon={<AlertTriangle size={14} />} label="Blocked" value="Yes" title={task.blocked_reason} /> : null}
+            {task.blocked_reason ? <MetaRow icon={<AlertTriangle size={14} />} label="Blocked" value="Manual" title={task.blocked_reason} /> : null}
+            {dependencyBlocked ? <MetaRow icon={<AlertTriangle size={14} />} label="Blocked" value="Dependencies" /> : null}
+            {task.blocked_by_task_ids.length > 0 ? (
+              <MetaRow icon={<Hash size={14} />} label="Blocked by" value={task.blocked_by_task_ids.map((id) => `#${id}`).join(', ')} />
+            ) : null}
+            {task.blocks_task_ids.length > 0 ? (
+              <MetaRow icon={<Hash size={14} />} label="Unblocks" value={task.blocks_task_ids.map((id) => `#${id}`).join(', ')} />
+            ) : null}
             {task.due_date ? <MetaRow icon={<Flag size={14} />} label="Due" value={dueLabel || '—'} title={task.due_date} /> : null}
             <div
               className="mt-1 inline-flex items-center gap-1.5 text-[11px] text-[rgb(var(--cb-text-muted))]"

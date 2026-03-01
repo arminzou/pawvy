@@ -28,6 +28,9 @@ export interface Task {
   context_key: string | null;
   context_type: string | null;
   is_someday: boolean;
+  blocked_by_task_ids: number[];
+  blocks_task_ids: number[];
+  is_dependency_blocked: boolean;
   resolved_anchor: string | null;
   anchor_source: AnchorSource;
 }
@@ -35,7 +38,10 @@ export interface Task {
 /**
  * Raw DB row shape (as returned by better-sqlite3). `tags` is stored as JSON string.
  */
-export interface TaskRow extends Omit<Task, 'tags' | 'is_someday' | 'non_agent' | 'resolved_anchor' | 'anchor_source'> {
+export interface TaskRow extends Omit<
+  Task,
+  'tags' | 'is_someday' | 'non_agent' | 'blocked_by_task_ids' | 'blocks_task_ids' | 'is_dependency_blocked' | 'resolved_anchor' | 'anchor_source'
+> {
   tags: string | null;
   is_someday: number; // SQLite stores boolean as 0/1
   non_agent: number;

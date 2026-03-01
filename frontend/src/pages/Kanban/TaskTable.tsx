@@ -177,22 +177,28 @@ export function TaskTable({
               const due = fmtDate(t.due_date ?? null);
               const updated = fmtDate((t.updated_at as string | undefined) ?? (t.created_at as string | undefined));
               const priority = String(t.priority ?? '').trim();
+              const dependencyBlocked = Boolean(t.is_dependency_blocked);
+              const isBlocked = Boolean(t.blocked_reason || dependencyBlocked);
 
               return (
                 <tr
                   key={t.id}
                   className={clsx(
                     'cursor-pointer bg-white hover:bg-slate-50',
-                    t.blocked_reason ? 'bg-rose-50/30' : null,
+                    isBlocked ? 'bg-rose-50/30' : null,
                   )}
                   onClick={() => onOpen(t)}
-                  title={t.blocked_reason ? `Blocked: ${t.blocked_reason}` : 'Open'}
+                  title={t.blocked_reason ? `Blocked: ${t.blocked_reason}` : (dependencyBlocked ? 'Blocked by dependencies' : 'Open')}
                 >
                   <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-slate-600">{t.id}</td>
                   <td className="px-4 py-3">
                     <div className="font-medium text-slate-900">{t.title}</div>
                     {t.blocked_reason ? (
                       <div className="mt-1 line-clamp-1 text-xs text-rose-700">Blocked: {t.blocked_reason}</div>
+                    ) : dependencyBlocked ? (
+                      <div className="mt-1 line-clamp-1 text-xs text-rose-700">
+                        Blocked by dependencies ({t.blocked_by_task_ids.map((id) => `#${id}`).join(', ')})
+                      </div>
                     ) : null}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-slate-700">{STATUS_LABEL[t.status as TaskStatus] ?? t.status}</td>

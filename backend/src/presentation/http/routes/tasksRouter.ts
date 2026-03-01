@@ -187,8 +187,21 @@ export function createTasksRouter({ db, broadcast }: { db: Database; broadcast?:
   router.patch('/:id', (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = parseId(req.params.id);
+      const before = service.getById(id);
       const task = anchors.enrich(service.update(id, req.body));
       broadcast?.({ type: 'task_updated', data: task });
+      if (before.status !== 'done' && task.status === 'done') {
+        const dependents = service.listNewlyUnblockedDependents(id);
+        if (dependents.length > 0) {
+          broadcast?.({
+            type: 'tasks_newly_unblocked',
+            data: {
+              completed_task_id: id,
+              dependents,
+            },
+          });
+        }
+      }
       res.json(task);
     } catch (err) {
       next(err);

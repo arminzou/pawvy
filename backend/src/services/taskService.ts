@@ -38,6 +38,21 @@ function validateAssigneePair(pair: AssigneePair): void {
   }
 }
 
+function normalizeDependencyIds(input: unknown): number[] {
+  if (input === undefined) return [];
+  if (!Array.isArray(input)) throw new HttpError(400, 'blocked_by_task_ids must be an array');
+  const seen = new Set<number>();
+  const out: number[] = [];
+  for (const raw of input) {
+    const id = Number(raw);
+    if (!Number.isInteger(id) || id <= 0) throw new HttpError(400, 'Invalid blocked_by_task_ids value');
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
+  }
+  return out;
+}
+
 export class TaskService {
   constructor(private readonly repo: TaskRepository) {}
 
@@ -76,22 +91,33 @@ export class TaskService {
     const assigneeId = normalizeNullableString(body.assigned_to_id);
     const nonAgent = body.non_agent === true;
     this.enforceAssigneeCompatibility(nonAgent, { type: assigneeType, id: assigneeId });
+    const blockedByTaskIds = body.blocked_by_task_ids === undefined
+      ? undefined
+      : normalizeDependencyIds(body.blocked_by_task_ids);
 
-    return this.repo.create({
-      ...body,
-      title: body.title.trim(),
-      due_date: normalizeNullableString(body.due_date),
-      assigned_to_type: assigneeType,
-      assigned_to_id: assigneeId,
-      non_agent: nonAgent,
-      anchor: normalizeNullableString(body.anchor),
-    });
+    try {
+      return this.repo.create({
+        ...body,
+        title: body.title.trim(),
+        due_date: normalizeNullableString(body.due_date),
+        assigned_to_type: assigneeType,
+        assigned_to_id: assigneeId,
+        non_agent: nonAgent,
+        anchor: normalizeNullableString(body.anchor),
+        blocked_by_task_ids: blockedByTaskIds,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg === 'Dependency task not found') throw new HttpError(400, 'Dependency task not found');
+      throw err;
+    }
   }
 
   update(id: number, patch: UpdateTaskBody): Task {
     if (!patch || Object.keys(patch).length === 0) throw new HttpError(400, 'No fields to update');
 
     const existing = this.getById(id);
+    const hasDependencyPatch = Object.prototype.hasOwnProperty.call(patch, 'blocked_by_task_ids');
 
     const normalized: UpdateTaskBody = { ...patch };
     if (typeof normalized.title === 'string') normalized.title = normalized.title.trim();
@@ -125,12 +151,38 @@ export class TaskService {
     const finalNonAgent = normalized.non_agent ?? existing.non_agent;
     this.enforceAssigneeCompatibility(finalNonAgent, finalPair);
 
+    const dependencies = hasDependencyPatch
+      ? normalizeDependencyIds((patch as UpdateTaskBody).blocked_by_task_ids)
+      : undefined;
+    if (dependencies?.includes(id)) {
+      throw new HttpError(400, 'A task cannot depend on itself');
+    }
+
+    delete (normalized as UpdateTaskBody & { blocked_by_task_ids?: number[] }).blocked_by_task_ids;
+
+    if (Object.keys(normalized).length === 0 && dependencies !== undefined) {
+      try {
+        this.repo.replaceDependencies(id, dependencies);
+        return this.getById(id);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg === 'Dependency task not found') throw new HttpError(400, 'Dependency task not found');
+        throw err;
+      }
+    }
+
     try {
-      return this.repo.update(id, normalized);
+      const updated = this.repo.update(id, normalized);
+      if (dependencies !== undefined) {
+        this.repo.replaceDependencies(id, dependencies);
+        return this.getById(id);
+      }
+      return updated;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       if (msg === 'Task not found') throw new HttpError(404, 'Task not found');
       if (msg === 'No fields to update') throw new HttpError(400, 'No fields to update');
+      if (msg === 'Dependency task not found') throw new HttpError(400, 'Dependency task not found');
       throw err;
     }
   }
@@ -194,5 +246,9 @@ export class TaskService {
   delete(id: number): void {
     const { changes } = this.repo.delete(id);
     if (changes === 0) throw new HttpError(404, 'Task not found');
+  }
+
+  listNewlyUnblockedDependents(taskId: number): Array<{ id: number; title: string }> {
+    return this.repo.listNewlyUnblockedDependents(taskId);
   }
 }

@@ -394,6 +394,51 @@ function migrate(db) {
     db.exec('CREATE INDEX IF NOT EXISTS idx_tasks_non_agent ON tasks(non_agent)');
     db.pragma('user_version = 9');
   }
+
+  // 9 -> 10: add task dependency table + document metadata/link table
+  if (v < 10) {
+    const hasDocTypeTag = hasColumn('documents', 'doc_type_tag');
+    if (!hasDocTypeTag) {
+      db.exec('ALTER TABLE documents ADD COLUMN doc_type_tag TEXT');
+    }
+
+    const hasLastAccessedAt = hasColumn('documents', 'last_accessed_at');
+    if (!hasLastAccessedAt) {
+      db.exec('ALTER TABLE documents ADD COLUMN last_accessed_at DATETIME');
+    }
+
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS document_task_links (
+        document_id INTEGER NOT NULL,
+        task_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (document_id, task_id),
+        FOREIGN KEY (document_id) REFERENCES documents(id),
+        FOREIGN KEY (task_id) REFERENCES tasks(id)
+      )
+    `);
+
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS task_dependencies (
+        task_id INTEGER NOT NULL,
+        depends_on_task_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (task_id, depends_on_task_id),
+        CHECK (task_id != depends_on_task_id),
+        FOREIGN KEY (task_id) REFERENCES tasks(id),
+        FOREIGN KEY (depends_on_task_id) REFERENCES tasks(id)
+      )
+    `);
+
+    db.exec('CREATE INDEX IF NOT EXISTS idx_documents_doc_type_tag ON documents(doc_type_tag)');
+    db.exec('CREATE INDEX IF NOT EXISTS idx_documents_last_accessed_at ON documents(last_accessed_at)');
+    db.exec('CREATE INDEX IF NOT EXISTS idx_document_task_links_document ON document_task_links(document_id)');
+    db.exec('CREATE INDEX IF NOT EXISTS idx_document_task_links_task ON document_task_links(task_id)');
+    db.exec('CREATE INDEX IF NOT EXISTS idx_task_dependencies_task ON task_dependencies(task_id)');
+    db.exec('CREATE INDEX IF NOT EXISTS idx_task_dependencies_depends_on ON task_dependencies(depends_on_task_id)');
+
+    db.pragma('user_version = 10');
+  }
 }
 
 module.exports = { migrate };

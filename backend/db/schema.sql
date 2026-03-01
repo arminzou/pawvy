@@ -68,10 +68,33 @@ CREATE TABLE IF NOT EXISTS documents (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     file_path TEXT UNIQUE NOT NULL,
     file_type TEXT, -- extension or category
+    doc_type_tag TEXT, -- optional semantic type: spec, runbook, reference, decision
     last_modified DATETIME,
     last_modified_by TEXT, -- 'tee', 'fay', 'armin', 'system'
+    last_accessed_at DATETIME, -- when an agent/human last opened/read this doc via Clawboard
     size_bytes INTEGER,
     git_status TEXT -- 'modified', 'added', 'deleted', 'untracked', 'clean'
+);
+
+-- Document <-> Task links
+CREATE TABLE IF NOT EXISTS document_task_links (
+    document_id INTEGER NOT NULL,
+    task_id INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (document_id, task_id),
+    FOREIGN KEY (document_id) REFERENCES documents(id),
+    FOREIGN KEY (task_id) REFERENCES tasks(id)
+);
+
+-- Task dependency relationships (task_id depends on depends_on_task_id)
+CREATE TABLE IF NOT EXISTS task_dependencies (
+    task_id INTEGER NOT NULL,
+    depends_on_task_id INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (task_id, depends_on_task_id),
+    CHECK (task_id != depends_on_task_id),
+    FOREIGN KEY (task_id) REFERENCES tasks(id),
+    FOREIGN KEY (depends_on_task_id) REFERENCES tasks(id)
 );
 
 -- Indexes for common queries
@@ -83,3 +106,9 @@ CREATE INDEX IF NOT EXISTS idx_activities_timestamp ON activities(timestamp);
 CREATE INDEX IF NOT EXISTS idx_activities_task ON activities(related_task_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_activities_source_id ON activities(source_id);
 CREATE INDEX IF NOT EXISTS idx_documents_path ON documents(file_path);
+CREATE INDEX IF NOT EXISTS idx_documents_doc_type_tag ON documents(doc_type_tag);
+CREATE INDEX IF NOT EXISTS idx_documents_last_accessed_at ON documents(last_accessed_at);
+CREATE INDEX IF NOT EXISTS idx_document_task_links_document ON document_task_links(document_id);
+CREATE INDEX IF NOT EXISTS idx_document_task_links_task ON document_task_links(task_id);
+CREATE INDEX IF NOT EXISTS idx_task_dependencies_task ON task_dependencies(task_id);
+CREATE INDEX IF NOT EXISTS idx_task_dependencies_depends_on ON task_dependencies(depends_on_task_id);

@@ -91,6 +91,15 @@ describe('TaskService', () => {
         });
       }).toThrow(HttpError);
     });
+
+    it('rejects self-referential task dependency', () => {
+      const task = service.create({ title: 'Self dependency task' });
+      expect(() =>
+        service.update(task.id, {
+          blocked_by_task_ids: [task.id],
+        } as any),
+      ).toThrow(HttpError);
+    });
   });
 
   describe('list filters', () => {

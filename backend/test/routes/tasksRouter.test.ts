@@ -14,6 +14,9 @@ type TaskLike = {
   assigned_to_id?: string | null;
   project_id?: number | null;
   completed_at?: string | null;
+  blocked_by_task_ids?: number[];
+  blocks_task_ids?: number[];
+  is_dependency_blocked?: boolean;
   resolved_anchor?: string | null;
   anchor_source?: 'task' | 'project' | 'category' | 'scratch' | null;
   non_agent?: boolean;
@@ -329,5 +332,70 @@ describe('Tasks API', () => {
     await request(appCtx.app).get('/api/tasks?offset=1.5').expect(400);
     await request(appCtx.app).get('/api/tasks?non_agent=maybe').expect(400);
     await request(appCtx.app).get('/api/tasks/not-a-number').expect(400);
+  });
+
+  it('stores task dependencies and computes dependency-blocked state', async () => {
+    const appCtx = createTestApp();
+    db = appCtx.db;
+
+    const blocker = await request(appCtx.app)
+      .post('/api/tasks')
+      .send({ title: 'Blocker', status: 'backlog' })
+      .expect(201);
+
+    const dependent = await request(appCtx.app)
+      .post('/api/tasks')
+      .send({
+        title: 'Dependent',
+        status: 'backlog',
+        blocked_by_task_ids: [blocker.body.id],
+      })
+      .expect(201);
+
+    expect(dependent.body.blocked_by_task_ids).toEqual([blocker.body.id]);
+    expect(dependent.body.is_dependency_blocked).toBe(true);
+
+    const list = await request(appCtx.app).get('/api/tasks').expect(200);
+    const blockerTask = (list.body as TaskLike[]).find((task) => task.id === blocker.body.id);
+    const dependentTask = (list.body as TaskLike[]).find((task) => task.id === dependent.body.id);
+
+    expect(blockerTask?.blocks_task_ids).toContain(dependent.body.id);
+    expect(dependentTask?.blocked_by_task_ids).toEqual([blocker.body.id]);
+    expect(dependentTask?.is_dependency_blocked).toBe(true);
+  });
+
+  it('broadcasts newly unblocked dependents when a prerequisite is completed', async () => {
+    const broadcast = vi.fn();
+    const appCtx = createTestApp({ broadcast });
+    db = appCtx.db;
+
+    const blocker = await request(appCtx.app)
+      .post('/api/tasks')
+      .send({ title: 'Blocker', status: 'in_progress' })
+      .expect(201);
+
+    const dependent = await request(appCtx.app)
+      .post('/api/tasks')
+      .send({
+        title: 'Dependent',
+        status: 'backlog',
+        blocked_by_task_ids: [blocker.body.id],
+      })
+      .expect(201);
+
+    await request(appCtx.app)
+      .patch(`/api/tasks/${blocker.body.id}`)
+      .send({ status: 'done' })
+      .expect(200);
+
+    expect(broadcast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'tasks_newly_unblocked',
+        data: {
+          completed_task_id: blocker.body.id,
+          dependents: [{ id: dependent.body.id, title: 'Dependent' }],
+        },
+      }),
+    );
   });
 });

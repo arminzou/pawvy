@@ -827,7 +827,7 @@ export function KanbanPage({
       if (wantAssignee !== 'all' && (t.assigned_to_id ?? null) !== wantAssignee) return false;
       if (wantTag !== 'all' && !(Array.isArray(t.tags) && t.tags.includes(wantTag))) return false;
       if (hideDone && t.status === 'done') return false;
-      if (blocked && !t.blocked_reason) return false;
+      if (blocked && !t.blocked_reason && !t.is_dependency_blocked) return false;
       if (!showSomeday && t.is_someday) return false;
 
       // Context filtering
@@ -1078,6 +1078,7 @@ export function KanbanPage({
     <>
       <AppShell
         sidebar={sidebar}
+        sidebarCollapsed={sidebarCollapsed}
         topbar={topbar}
         wsSignal={wsSignal}
         wsStatus={wsStatus}

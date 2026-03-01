@@ -43,6 +43,20 @@ function hasTag(tags: string[], tag: string): boolean {
   return tags.some((t) => t.toLowerCase() === target);
 }
 
+function parseTaskIdCsv(raw: string): number[] {
+  const seen = new Set<number>();
+  const out: number[] = [];
+  for (const part of raw.split(',')) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+    const id = Number(trimmed);
+    if (!Number.isInteger(id) || id <= 0 || seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
+  }
+  return out;
+}
+
 // tag toggling handled by TagPicker
 
 function TagPicker({
@@ -330,6 +344,7 @@ type EditTaskFormValues = {
   nonAgent: boolean;
   anchor: string;
   blockedReason: string;
+  blockedByTaskIds: string;
   projectId: number | null;
   isSomeday: boolean;
 };
@@ -356,6 +371,7 @@ export function EditTaskModal({
     non_agent?: boolean;
     anchor?: string | null;
     blocked_reason?: string | null;
+    blocked_by_task_ids?: number[];
     project_id?: number | null;
     is_someday?: boolean;
   }) => Promise<void>;
@@ -385,6 +401,7 @@ export function EditTaskModal({
       nonAgent: Boolean(task.non_agent),
       anchor: task.anchor ?? '',
       blockedReason: task.blocked_reason ?? '',
+      blockedByTaskIds: task.blocked_by_task_ids.join(', '),
       projectId: task.project_id ?? null,
       isSomeday: Boolean(task.is_someday),
     },
@@ -452,6 +469,7 @@ export function EditTaskModal({
           non_agent: values.nonAgent,
           anchor: values.anchor.trim() ? values.anchor.trim() : null,
           blocked_reason: values.blockedReason.trim() ? values.blockedReason : null,
+          blocked_by_task_ids: parseTaskIdCsv(values.blockedByTaskIds),
           project_id: values.projectId,
           is_someday: values.isSomeday,
         });
@@ -630,6 +648,14 @@ export function EditTaskModal({
                   />
                 </label>
 
+                <label className="text-sm">
+                  <div className="mb-1 text-xs font-medium text-[rgb(var(--cb-text-muted))]">Blocked by task IDs</div>
+                  <Input
+                    {...register('blockedByTaskIds')}
+                    placeholder="e.g. 12, 18"
+                  />
+                </label>
+
                 <div className="grid grid-cols-2 gap-3">
                   <label className="text-sm">
                     <div className="mb-1 text-xs font-medium text-[rgb(var(--cb-text-muted))]">Project</div>
@@ -784,6 +810,7 @@ export function CreateTaskModal({
     due_date?: string | null;
     tags?: string[] | string;
     blocked_reason?: string | null;
+    blocked_by_task_ids?: number[];
     assigned_to_type?: AssigneeType;
     assigned_to_id?: string | null;
     non_agent?: boolean;
@@ -814,6 +841,7 @@ export function CreateTaskModal({
       nonAgent: false,
       anchor: '',
       blockedReason: '',
+      blockedByTaskIds: '',
       projectId: initialProjectId ?? null,
       isSomeday: false,
     },
@@ -877,6 +905,7 @@ export function CreateTaskModal({
           due_date: values.dueDate.trim() ? values.dueDate.trim() : null,
           tags: mergeTags(values.tags),
           blocked_reason: values.blockedReason.trim() ? values.blockedReason : null,
+          blocked_by_task_ids: parseTaskIdCsv(values.blockedByTaskIds),
           assigned_to_type: values.assignedType,
           assigned_to_id: values.assignedId,
           non_agent: values.nonAgent,
@@ -1038,6 +1067,14 @@ export function CreateTaskModal({
                 <label className="text-sm">
                   <div className="mb-1 text-xs font-medium text-[rgb(var(--cb-text-muted))]">Blocked reason</div>
                   <textarea {...register('blockedReason')} className="cb-input w-full" rows={2} placeholder="Optional…" />
+                </label>
+
+                <label className="text-sm">
+                  <div className="mb-1 text-xs font-medium text-[rgb(var(--cb-text-muted))]">Blocked by task IDs</div>
+                  <Input
+                    {...register('blockedByTaskIds')}
+                    placeholder="e.g. 12, 18"
+                  />
                 </label>
 
                 <div className="grid grid-cols-2 gap-3">
