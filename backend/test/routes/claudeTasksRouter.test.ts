@@ -30,9 +30,10 @@ describe('Claude Tasks API', () => {
       JSON.stringify([
         {
           id: 'native-1',
-          title: 'Sync task #1',
+          subject: 'Sync task #1',
           status: 'in_progress',
-          dependencies: ['native-0'],
+          blockedBy: ['native-0'],
+          blocks: ['native-2'],
           updated_at: new Date().toISOString(),
           clawboard_task_id: 1,
         },
@@ -67,5 +68,52 @@ describe('Claude Tasks API', () => {
       ]),
     );
   });
-});
 
+  it('chunks mapped task lookups to avoid sqlite variable overflow', async () => {
+    const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'clawboard-claude-tasks-'));
+    const workspaceDir = path.join(tempHome, '.claude', 'tasks', 'workspace-many');
+    fs.mkdirSync(workspaceDir, { recursive: true });
+
+    const mappedCount = 1200;
+    const mappedRows: Array<{ id: string; subject: string; status: string; blockedBy: string[]; clawboard_task_id: number }> = [];
+    process.env.HOME = tempHome;
+
+    const appCtx = createTestApp();
+    db = appCtx.db;
+
+    const insertTask = db.prepare('INSERT INTO tasks (title, status) VALUES (?, ?)');
+    for (let i = 1; i <= mappedCount; i += 1) {
+      insertTask.run(`Mapped task ${i}`, 'backlog');
+      mappedRows.push({
+        id: `native-${i}`,
+        subject: `Native task ${i}`,
+        status: 'pending',
+        blockedBy: [],
+        clawboard_task_id: i,
+      });
+    }
+
+    fs.writeFileSync(path.join(workspaceDir, 'tasks.json'), JSON.stringify(mappedRows), 'utf8');
+
+    const res = await request(appCtx.app).get('/api/claude/tasks').expect(200);
+    expect(res.body.tasks).toHaveLength(mappedCount);
+    expect(res.body.tasks[0]).toEqual(
+      expect.objectContaining({
+        id: 'native-1',
+        title: 'Native task 1',
+        mapped_task_id: 1,
+        mapped_task_title: 'Mapped task 1',
+        mapped_task_status: 'backlog',
+      }),
+    );
+    expect(res.body.tasks[mappedCount - 1]).toEqual(
+      expect.objectContaining({
+        id: `native-${mappedCount}`,
+        title: `Native task ${mappedCount}`,
+        mapped_task_id: mappedCount,
+        mapped_task_title: `Mapped task ${mappedCount}`,
+        mapped_task_status: 'backlog',
+      }),
+    );
+  });
+});

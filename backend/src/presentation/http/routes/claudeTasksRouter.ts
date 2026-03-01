@@ -23,6 +23,8 @@ type WorkspaceSummary = {
   highwatermark: number | null;
 };
 
+const SQLITE_IN_MAX_VARIABLES = 900;
+
 function normalizeStatus(raw: unknown): string {
   const value = String(raw ?? '').trim().toLowerCase();
   if (!value) return 'unknown';
@@ -57,12 +59,16 @@ function normalizeDependencies(raw: unknown): string[] {
   return out;
 }
 
+function normalizeTaskTitle(value: Record<string, unknown>): string {
+  return String(value.title ?? value.subject ?? value.name ?? value.summary ?? value.activeForm ?? '').trim();
+}
+
 function normalizeTaskRecord(raw: unknown, sourceFile: string): ClaudeTaskRow | null {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const value = raw as Record<string, unknown>;
 
   const inferredId = String(value.id ?? value.task_id ?? value.uuid ?? '').trim();
-  const inferredTitle = String(value.title ?? value.name ?? value.summary ?? '').trim();
+  const inferredTitle = normalizeTaskTitle(value);
   if (!inferredId && !inferredTitle) return null;
 
   const mappedTaskIdRaw = value.clawboard_task_id ?? value.task_id ?? null;
@@ -77,7 +83,13 @@ function normalizeTaskRecord(raw: unknown, sourceFile: string): ClaudeTaskRow | 
     title: inferredTitle || `Task ${inferredId}`,
     status: normalizeStatus(value.status ?? value.state),
     updated_at: normalizeIsoDate(value.updated_at ?? value.updatedAt ?? value.modified_at ?? value.timestamp),
-    dependencies: normalizeDependencies(value.dependencies ?? value.dependency_ids ?? value.depends_on),
+    dependencies: normalizeDependencies(
+      value.blockedBy
+      ?? value.blocked_by
+      ?? value.dependencies
+      ?? value.dependency_ids
+      ?? value.depends_on,
+    ),
     source_file: sourceFile,
     mapped_task_id: Number.isInteger(mappedTaskId) ? mappedTaskId : null,
     mapped_task_title: null,
@@ -93,7 +105,7 @@ function walkFiles(root: string, maxDepth = 4): string[] {
     if (depth > maxDepth) return;
     const entries = fs.readdirSync(current, { withFileTypes: true });
     for (const entry of entries) {
-      if (entry.name === '.lock') continue;
+      if (entry.name.startsWith('.')) continue;
       const full = path.join(current, entry.name);
       if (entry.isDirectory()) {
         visit(full, depth + 1);
@@ -111,12 +123,12 @@ function parseTaskFiles(files: string[], baseDir: string): ClaudeTaskRow[] {
   const out: ClaudeTaskRow[] = [];
 
   for (const filePath of files) {
-    const rel = path.relative(baseDir, filePath);
-    const ext = path.extname(filePath).toLowerCase();
-    const content = fs.readFileSync(filePath, 'utf8');
+    try {
+      const rel = path.relative(baseDir, filePath);
+      const ext = path.extname(filePath).toLowerCase();
+      const content = fs.readFileSync(filePath, 'utf8');
 
-    if (ext === '.json') {
-      try {
+      if (ext === '.json' || !ext) {
         const parsed = JSON.parse(content) as unknown;
         if (Array.isArray(parsed)) {
           for (const row of parsed) {
@@ -127,22 +139,22 @@ function parseTaskFiles(files: string[], baseDir: string): ClaudeTaskRow[] {
           const normalized = normalizeTaskRecord(parsed, rel);
           if (normalized) out.push(normalized);
         }
-      } catch {
-        // ignore malformed files
+        continue;
       }
-      continue;
-    }
 
-    if (ext === '.jsonl' || ext === '.ndjson') {
-      const lines = content.split('\n').map((line) => line.trim()).filter(Boolean);
-      for (const line of lines) {
-        try {
-          const normalized = normalizeTaskRecord(JSON.parse(line), rel);
-          if (normalized) out.push(normalized);
-        } catch {
-          // skip malformed lines
+      if (ext === '.jsonl' || ext === '.ndjson') {
+        const lines = content.split('\n').map((line) => line.trim()).filter(Boolean);
+        for (const line of lines) {
+          try {
+            const normalized = normalizeTaskRecord(JSON.parse(line), rel);
+            if (normalized) out.push(normalized);
+          } catch {
+            // skip malformed lines
+          }
         }
       }
+    } catch {
+      // isolate parse/read errors to individual files
     }
   }
 
@@ -192,12 +204,15 @@ export function createClaudeTasksRouter({ db }: { db: Database }) {
 
       const mappedTaskLookup = new Map<number, { title: string; status: string }>();
       if (mappedIds.length > 0) {
-        const placeholders = mappedIds.map(() => '?').join(', ');
-        const rows = db
-          .prepare(`SELECT id, title, status FROM tasks WHERE id IN (${placeholders})`)
-          .all(...mappedIds) as Array<{ id: number; title: string; status: string }>;
-        for (const row of rows) {
-          mappedTaskLookup.set(row.id, { title: row.title, status: row.status });
+        for (let i = 0; i < mappedIds.length; i += SQLITE_IN_MAX_VARIABLES) {
+          const batch = mappedIds.slice(i, i + SQLITE_IN_MAX_VARIABLES);
+          const placeholders = batch.map(() => '?').join(', ');
+          const rows = db
+            .prepare(`SELECT id, title, status FROM tasks WHERE id IN (${placeholders})`)
+            .all(...batch) as Array<{ id: number; title: string; status: string }>;
+          for (const row of rows) {
+            mappedTaskLookup.set(row.id, { title: row.title, status: row.status });
+          }
         }
       }
 
