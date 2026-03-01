@@ -1,11 +1,13 @@
-import { ChevronLeft, ChevronRight, ChevronDown, Folder, User, Trash2, Pencil, Save, Sliders } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Folder, FolderPlus, Plus, X, User, Trash2, Pencil, Save, Sliders } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import type { TaskStatus, Project } from '../../lib/api';
+import { api, type TaskStatus, type Project } from '../../lib/api';
 import { useAgents } from '../../hooks/useAgents';
+import { toast } from '../../lib/toast';
 import { Chip } from '../ui/Chip';
 import { Button } from '../ui/Button';
 import { Checkbox } from '../ui/Checkbox';
 import { ConfirmModal } from '../ui/ConfirmModal';
+import { Input } from '../ui/Input';
 import { Menu } from '../ui/Menu';
 import { ModalShell } from '../ui/ModalShell';
 import { PromptModal } from '../ui/PromptModal';
@@ -29,6 +31,7 @@ export function Sidebar({
   projects,
   currentProjectId,
   onProjectChange,
+  onRefreshProjects,
   onDeleteProject,
   onRenameProject,
   collapsed,
@@ -76,6 +79,7 @@ export function Sidebar({
   projects?: Project[];
   currentProjectId?: number | null;
   onProjectChange?: (id: number | null) => void;
+  onRefreshProjects?: () => void | Promise<void>;
   onDeleteProject?: (id: number) => void | Promise<void>;
   onRenameProject?: (id: number, name: string) => void | Promise<void>;
 
@@ -255,6 +259,11 @@ export function Sidebar({
   const currentViewLabel = activeSavedView?.name ?? viewItems.find((it) => it.key === view)?.label ?? 'All';
 
   const [projectMenuOpen, setProjectMenuOpen] = useState(false);
+  const [registerOpen, setRegisterOpen] = useState(false);
+  const [registerPath, setRegisterPath] = useState('');
+  const [registerName, setRegisterName] = useState('');
+  const [registerSubmitting, setRegisterSubmitting] = useState(false);
+  const registerPathRef = useRef<HTMLInputElement | null>(null);
   const [showSaveViewModal, setShowSaveViewModal] = useState(false);
   const [confirmDeleteView, setConfirmDeleteView] = useState<{ id: string; name: string } | null>(null);
   const [assignProjectModalOpen, setAssignProjectModalOpen] = useState(false);
@@ -280,6 +289,80 @@ export function Sidebar({
   const filterChipClass =
     'inline-flex items-center rounded-md bg-white px-2 py-0.5 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50 active:bg-slate-100 active:translate-y-px active:shadow-inner';
 
+  function parseApiError(error: unknown): { status: number | null; backendMessage: string | null; rawMessage: string } {
+    const rawMessage = error instanceof Error ? error.message : String(error);
+    const statusMatch = rawMessage.match(/^(\d{3})\s/);
+    const status = statusMatch ? Number.parseInt(statusMatch[1], 10) : null;
+
+    const bodyStart = rawMessage.indexOf('{');
+    if (bodyStart >= 0) {
+      const bodyText = rawMessage.slice(bodyStart);
+      try {
+        const parsed = JSON.parse(bodyText) as { error?: unknown; message?: unknown };
+        const backendMessage =
+          typeof parsed.error === 'string'
+            ? parsed.error
+            : typeof parsed.message === 'string'
+              ? parsed.message
+              : null;
+        return { status, backendMessage, rawMessage };
+      } catch {
+        // fall through to raw text handling
+      }
+    }
+
+    return { status, backendMessage: null, rawMessage };
+  }
+
+  function mapCreateProjectError(error: unknown): string {
+    const { status, backendMessage, rawMessage } = parseApiError(error);
+    const normalizedMessage = (backendMessage ?? rawMessage).toLowerCase();
+
+    if (status === 409 || normalizedMessage.includes('already registered') || normalizedMessage.includes('already exists')) {
+      return 'This folder is already registered as a project. Choose a different path or open the existing project.';
+    }
+
+    if (
+      status === 400
+      || normalizedMessage.includes('path is required')
+      || normalizedMessage.includes('path contains unresolved')
+      || normalizedMessage.includes('path must resolve to an absolute path')
+    ) {
+      return 'Invalid folder path. Use an absolute path and resolve any environment variables before submitting.';
+    }
+
+    return `Failed to register project: ${backendMessage ?? rawMessage}`;
+  }
+
+  function derivedProjectName(path: string): string {
+    return path.split('/').filter(Boolean).at(-1) ?? '';
+  }
+
+  function closeRegisterForm() {
+    setRegisterOpen(false);
+    setRegisterPath('');
+    setRegisterName('');
+  }
+
+  async function handleRegisterProjectSubmit() {
+    const path = registerPath.trim();
+    const name = registerName.trim() || derivedProjectName(path);
+    if (!name || !path) return;
+
+    setRegisterSubmitting(true);
+    try {
+      const created = await api.createProject({ name, path });
+      await onRefreshProjects?.();
+      onProjectChange?.(created.id);
+      toast.success(`Project "${created.name}" registered`);
+      closeRegisterForm();
+    } catch (err) {
+      toast.error(mapCreateProjectError(err));
+    } finally {
+      setRegisterSubmitting(false);
+    }
+  }
+
   // Collapsed state - show only toggle button on desktop
   const collapsedToggle = (
     <aside className="hidden h-full w-10 shrink-0 border-r border-slate-200 bg-white lg:flex lg:flex-col lg:items-center lg:py-3">
@@ -302,11 +385,24 @@ export function Sidebar({
         className={`h-full w-full border-slate-200 bg-white lg:w-72 lg:border-r${collapsed ? ' lg:hidden' : ''}`}
       >
       <div className="px-4 py-4">
-        <div className="flex items-center justify-between">
-          <div className="min-w-0 flex-1">
+        <div>
+          <div className="flex items-center justify-between">
             <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Project</div>
-            {projects && projects.length >= 1 && onProjectChange ? (
-              <div className="relative mt-1">
+            <button
+              type="button"
+              className="flex h-6 w-6 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 active:bg-slate-200 active:translate-y-px active:shadow-inner"
+              onClick={onToggleCollapsed}
+              title="Collapse sidebar"
+              aria-label="Collapse sidebar"
+            >
+              <ChevronLeft size={18} />
+            </button>
+          </div>
+          <div className="min-w-0">
+            {projects && onProjectChange ? (
+              <>
+              <div className="mt-1 flex items-center gap-1">
+              <div className="relative flex-1">
                 <button
                   type="button"
                   className="flex w-full items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-sm font-semibold text-slate-900 transition hover:bg-slate-50 active:bg-slate-100 active:translate-y-px active:shadow-inner"
@@ -421,20 +517,21 @@ export function Sidebar({
                   </>
                 )}
               </div>
+              <button
+                type="button"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 active:bg-slate-200 active:translate-y-px"
+                onClick={() => setRegisterOpen((v) => !v)}
+                title="Add project"
+                aria-label="Add project"
+              >
+                <Plus size={15} />
+              </button>
+              </div>
+
+              </>
             ) : (
               <div className="mt-1 truncate text-base font-semibold text-slate-900">{projectName}</div>
             )}
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 active:bg-slate-200 active:translate-y-px active:shadow-inner"
-              onClick={onToggleCollapsed}
-              title="Collapse sidebar"
-              aria-label="Collapse sidebar"
-            >
-              <ChevronLeft size={18} />
-            </button>
           </div>
         </div>
 
@@ -483,6 +580,74 @@ export function Sidebar({
             }}
           />
         )}
+
+        {registerOpen ? (
+          <ModalShell onClose={() => { if (!registerSubmitting) closeRegisterForm(); }}>
+            <div className="flex flex-col gap-5 text-left">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-500">
+                  <FolderPlus size={20} />
+                </div>
+                <div>
+                  <div className="text-base font-semibold text-[rgb(var(--cb-text))]">Add project</div>
+                  <div className="text-xs text-[rgb(var(--cb-text-muted))]">Register a local folder as a project</div>
+                </div>
+              </div>
+
+              <label className="block">
+                <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-[rgb(var(--cb-text-muted))]">Path</div>
+                <Input
+                  ref={registerPathRef}
+                  value={registerPath}
+                  onChange={(e) => setRegisterPath(e.target.value)}
+                  placeholder="~/repos/projects/example"
+                  aria-label="Folder path"
+                  disabled={registerSubmitting}
+                  autoFocus
+                  className="font-mono"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') void handleRegisterProjectSubmit();
+                    if (e.key === 'Escape') closeRegisterForm();
+                  }}
+                />
+              </label>
+
+              <label className="block">
+                <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-[rgb(var(--cb-text-muted))]">Name</div>
+                <Input
+                  value={registerName}
+                  onChange={(e) => setRegisterName(e.target.value)}
+                  placeholder={derivedProjectName(registerPath) || 'project-name'}
+                  aria-label="Project name"
+                  disabled={registerSubmitting}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') void handleRegisterProjectSubmit();
+                    if (e.key === 'Escape') closeRegisterForm();
+                  }}
+                />
+                {registerPath.trim() && !registerName.trim() && (
+                  <div className="mt-1.5 text-xs text-[rgb(var(--cb-text-muted))]">
+                    Will use <span className="font-mono font-medium">{derivedProjectName(registerPath)}</span> if left blank
+                  </div>
+                )}
+              </label>
+
+              <div className="flex gap-2">
+                <Button variant="secondary" className="flex-1" disabled={registerSubmitting} onClick={closeRegisterForm}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  className="flex-1"
+                  disabled={registerSubmitting || !registerPath.trim()}
+                  onClick={() => void handleRegisterProjectSubmit()}
+                >
+                  {registerSubmitting ? 'Registering…' : 'Register project'}
+                </Button>
+              </div>
+            </div>
+          </ModalShell>
+        ) : null}
 
         {assignProjectModalOpen && onAssignUnassignedTasks ? (
           <ModalShell onClose={() => setAssignProjectModalOpen(false)}>

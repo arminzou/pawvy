@@ -976,6 +976,7 @@ export function KanbanPage({
       projects={projects}
       currentProjectId={currentProjectId}
       onProjectChange={handleProjectChange}
+      onRefreshProjects={refreshProjects}
       onDeleteProject={handleDeleteProject}
       onRenameProject={handleRenameProject}
       collapsed={sidebarCollapsed}
