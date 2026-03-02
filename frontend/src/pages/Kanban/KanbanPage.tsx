@@ -254,6 +254,8 @@ export function KanbanPage({
     }
   });
 
+  const [needsMe, setNeedsMe] = useState(false);
+
   const [savedViews, setSavedViews] = useState<SavedView[]>(() => {
     try {
       const raw = window.localStorage.getItem('cb.v2.kanban.savedViews');
@@ -824,7 +826,13 @@ export function KanbanPage({
     }
 
     return tasks.filter((t) => {
-      if (wantAssignee !== 'all' && (t.assigned_to_id ?? null) !== wantAssignee) return false;
+      if (needsMe) {
+        const isHumanTask = t.assigned_to_type === 'human' && t.status !== 'done';
+        const isInReview = t.status === 'review';
+        if (!isHumanTask && !isInReview) return false;
+      } else {
+        if (wantAssignee !== 'all' && (t.assigned_to_id ?? null) !== wantAssignee) return false;
+      }
       if (wantTag !== 'all' && !(Array.isArray(t.tags) && t.tags.includes(wantTag))) return false;
       if (hideDone && t.status === 'done') return false;
       if (blocked && !t.blocked_reason && !t.is_dependency_blocked) return false;
@@ -859,7 +867,7 @@ export function KanbanPage({
       const hay = `${t.title}\n${t.description ?? ''}\n${t.id}\n${t.status}\n${t.assigned_to_id ?? ''}\n${Array.isArray(t.tags) ? t.tags.join(' ') : ''}`.toLowerCase();
       return hay.includes(query);
     });
-  }, [assignee, tag, hideDone, blocked, showSomeday, q, tasks, due, context, currentContextKey]);
+  }, [needsMe, assignee, tag, hideDone, blocked, showSomeday, q, tasks, due, context, currentContextKey]);
 
   const [tagOptions, setTagOptions] = useState<string[]>([]);
 
@@ -898,9 +906,9 @@ export function KanbanPage({
   }, [sortKey]);
 
   const visibleTasks = useMemo(() => {
-    if (view === 'all') return baseFiltered;
+    if (needsMe || view === 'all') return baseFiltered;
     return baseFiltered.filter((t) => t.status === view);
-  }, [baseFiltered, view]);
+  }, [needsMe, baseFiltered, view]);
 
   const handleDeleteProject = useCallback(async (id: number) => {
     try {
@@ -953,22 +961,10 @@ export function KanbanPage({
     [baseFiltered.length, viewCounts],
   );
 
-  const myAgentId = useMemo(() => {
-    try {
-      const raw =
-        window.localStorage.getItem('cb.activity.agent') ??
-        window.localStorage.getItem('pm.activity.agent') ??
-        '';
-      const fromStorage = raw.trim().toLowerCase();
-      if (fromStorage) return fromStorage;
-    } catch {
-      // ignore
-    }
-    const discovered = (initialAgentIds ?? [])
-      .map((id) => String(id).trim().toLowerCase())
-      .filter(Boolean);
-    return discovered.length === 1 ? discovered[0] : null;
-  }, [initialAgentIds]);
+  const myQueueCount = useMemo(
+    () => tasks.filter((t) => (t.assigned_to_type === 'human' && t.status !== 'done') || t.status === 'review').length,
+    [tasks],
+  );
 
   const sidebar = (
     <Sidebar
@@ -1022,6 +1018,7 @@ export function KanbanPage({
         setQ('');
         setAssignee('all');
         setView('all');
+        setNeedsMe(false);
         setHideDone(false);
         setBlocked(false);
         setShowArchived(false);
@@ -1030,24 +1027,9 @@ export function KanbanPage({
         setTag('all');
         setContext('all');
       }}
-      onMyTasks={() => {
-        if (!myAgentId) {
-          toast.error('Could not determine current agent for My Tasks');
-          return;
-        }
-        // Switch to all projects and filter by current agent.
-        setCurrentProjectId(null);
-        setAssignee(myAgentId);
-        setView('all');
-        setHideDone(false);
-        setBlocked(false);
-        setShowSomeday(false);
-        setDue('any');
-        setTag('all');
-        setContext('all');
-        setQ('');
-      }}
-      myTasksCount={myAgentId ? tasks.filter((t) => t.assigned_to_id === myAgentId && t.status !== 'done').length : undefined}
+      onMyQueue={() => setNeedsMe((v) => !v)}
+      myQueueActive={needsMe}
+      myQueueCount={myQueueCount}
     />
   );
 

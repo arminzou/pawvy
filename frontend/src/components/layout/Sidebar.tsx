@@ -72,8 +72,9 @@ export function Sidebar({
   onContext,
   currentContextKey,
   onReset,
-  onMyTasks,
-  myTasksCount,
+  onMyQueue,
+  myQueueActive,
+  myQueueCount,
 }: {
   projectName: string;
   projects?: Project[];
@@ -136,8 +137,9 @@ export function Sidebar({
 
   onReset: () => void;
 
-  onMyTasks?: () => void;
-  myTasksCount?: number;
+  onMyQueue?: () => void;
+  myQueueActive?: boolean;
+  myQueueCount?: number;
 }) {
   const { agents } = useAgents();
 
@@ -535,19 +537,26 @@ export function Sidebar({
           </div>
         </div>
 
-        {onMyTasks && (
+        {onMyQueue && (
           <button
             type="button"
-            className="mt-4 flex w-full items-center justify-between gap-2 rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2.5 text-sm font-medium text-indigo-700 transition hover:bg-indigo-100 active:bg-indigo-200 active:translate-y-px active:shadow-inner"
-            onClick={onMyTasks}
+            className={`mt-4 flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-sm font-medium transition active:translate-y-px active:shadow-inner ${
+              myQueueActive
+                ? 'border-indigo-300 bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800'
+                : 'border-indigo-100 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 active:bg-indigo-200'
+            }`}
+            onClick={onMyQueue}
           >
             <span className="flex items-center gap-2">
               <User size={16} />
-              <span>My Tasks</span>
+              <span>My Queue</span>
             </span>
-            {myTasksCount !== undefined && (
-              <Chip variant="strong" className="bg-indigo-200 text-indigo-800">
-                {myTasksCount}
+            {myQueueCount !== undefined && myQueueCount > 0 && (
+              <Chip
+                variant="strong"
+                className={myQueueActive ? 'bg-white/20 text-white' : 'bg-indigo-200 text-indigo-800'}
+              >
+                {myQueueCount}
               </Chip>
             )}
           </button>
