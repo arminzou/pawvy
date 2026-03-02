@@ -70,4 +70,11 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
 
           ssh -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" \
-            "set -e; cd '$APP_DIR'; git fetch origin main; git reset --hard origin/main; APP_DIR='$APP_DIR' '$APP_DIR/scripts/deploy.sh'"
+            "set -e
+             if [ ! -d '$APP_DIR' ]; then
+               git clone '${{ gitea.server_url }}/${{ gitea.repository }}.git' '$APP_DIR'
+             fi
+             cd '$APP_DIR'
+             git fetch origin main
+             git reset --hard origin/main
+             APP_DIR='$APP_DIR' '$APP_DIR/scripts/deploy.sh'"
