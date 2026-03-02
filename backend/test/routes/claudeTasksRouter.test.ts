@@ -10,7 +10,7 @@ describe('Claude Tasks API', () => {
   let previousHome: string | undefined;
 
   beforeEach(() => {
-    process.env.CLAWBOARD_API_KEY = '';
+    process.env.PAWVY_API_KEY = '';
     previousHome = process.env.HOME;
   });
 
@@ -20,8 +20,8 @@ describe('Claude Tasks API', () => {
     process.env.HOME = previousHome;
   });
 
-  it('reads native Claude tasks and maps to Clawboard tasks when possible', async () => {
-    const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'clawboard-claude-tasks-'));
+  it('reads native Claude tasks and maps to Pawvy tasks when possible', async () => {
+    const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'pawvy-claude-tasks-'));
     const workspaceDir = path.join(tempHome, '.claude', 'tasks', 'workspace-a');
     fs.mkdirSync(workspaceDir, { recursive: true });
     fs.writeFileSync(path.join(workspaceDir, '.highwatermark'), '42', 'utf8');
@@ -35,7 +35,7 @@ describe('Claude Tasks API', () => {
           blockedBy: ['native-0'],
           blocks: ['native-2'],
           updated_at: new Date().toISOString(),
-          clawboard_task_id: 1,
+          pawvy_task_id: 1,
         },
       ]),
       'utf8',
@@ -70,12 +70,12 @@ describe('Claude Tasks API', () => {
   });
 
   it('chunks mapped task lookups to avoid sqlite variable overflow', async () => {
-    const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'clawboard-claude-tasks-'));
+    const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'pawvy-claude-tasks-'));
     const workspaceDir = path.join(tempHome, '.claude', 'tasks', 'workspace-many');
     fs.mkdirSync(workspaceDir, { recursive: true });
 
     const mappedCount = 1200;
-    const mappedRows: Array<{ id: string; subject: string; status: string; blockedBy: string[]; clawboard_task_id: number }> = [];
+    const mappedRows: Array<{ id: string; subject: string; status: string; blockedBy: string[]; pawvy_task_id: number }> = [];
     process.env.HOME = tempHome;
 
     const appCtx = createTestApp();
@@ -89,7 +89,7 @@ describe('Claude Tasks API', () => {
         subject: `Native task ${i}`,
         status: 'pending',
         blockedBy: [],
-        clawboard_task_id: i,
+        pawvy_task_id: i,
       });
     }
 

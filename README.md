@@ -1,8 +1,8 @@
-# Clawboard
+# Pawvy
 
 **A local-first command center for OpenClaw users.**
 
-Clawboard gives you a real-time Kanban board that tracks what you and your OpenClaw agents are working on across your workspace.
+Pawvy gives you a real-time Kanban board that tracks what you and your OpenClaw agents are working on across your workspace.
 
 *For OpenClaw users who want visibility into what their agents are doing.*
 
@@ -23,8 +23,8 @@ Clawboard gives you a real-time Kanban board that tracks what you and your OpenC
 
 ```bash
 # Clone and configure
-git clone https://github.com/zoulogic/clawboard.git
-cd clawboard
+git clone https://github.com/zoulogic/pawvy.git
+cd pawvy
 
 # Copy environment template
 cp .env.example .env
@@ -37,7 +37,7 @@ docker compose up -d --build
 Dashboard: **http://localhost:3001**
 
 `compose.yaml` is local-first and works without Traefik or extra Docker networks.
-By default it reads OpenClaw from `$HOME/.openclaw` and projects from `$HOME/.clawboard/projects`.
+By default it reads OpenClaw from `$HOME/.openclaw` and projects from `$HOME/.pawvy/projects`.
 
 ### Reverse Proxy (Traefik)
 
@@ -51,7 +51,7 @@ docker network create proxy
 docker compose -f compose.yaml -f compose.traefik.yaml up -d --build
 ```
 
-Set `CLAWBOARD_HOST` and optional `TRAEFIK_*` variables in `.env` for your environment.
+Set `PAWVY_HOST` and optional `TRAEFIK_*` variables in `.env` for your environment.
 
 ---
 
@@ -59,8 +59,8 @@ Set `CLAWBOARD_HOST` and optional `TRAEFIK_*` variables in `.env` for your envir
 
 ```bash
 # Clone and go
-git clone https://github.com/zoulogic/clawboard.git
-cd clawboard
+git clone https://github.com/zoulogic/pawvy.git
+cd pawvy
 
 # Install all deps and initialize DB
 pnpm run init
@@ -80,7 +80,7 @@ In `frontend/.env.local`:
 ```env
 API_BASE=http://<your-lan-ip>:3001
 WS_BASE=ws://<your-lan-ip>:3001/ws
-CLAWBOARD_API_KEY=<same as backend>
+PAWVY_API_KEY=<same as backend>
 ```
 
 Example:
@@ -88,20 +88,20 @@ Example:
 ```env
 API_BASE=http://192.168.20.10:3001
 WS_BASE=ws://192.168.20.10:3001/ws
-CLAWBOARD_API_KEY=replace-with-strong-key
+PAWVY_API_KEY=replace-with-strong-key
 ```
 
 Then restart frontend dev server.
 
 ### Agent Include Filter
 
-If you want Clawboard to show only specific agents (Arcade + real-time status events), set:
+If you want Pawvy to show only specific agents (Arcade + real-time status events), set:
 
 ```env
-CLAWBOARD_AGENTS_INCLUDE=tee,fay
+PAWVY_AGENTS_INCLUDE=tee,fay
 ```
 
-You can also configure this in `~/.clawboard/config.json`:
+You can also configure this in `~/.pawvy/config.json`:
 
 ```json
 {
@@ -115,11 +115,11 @@ Environment variable takes precedence over config file.
 
 ---
 
-## 🧩 Why Clawboard?
+## 🧩 Why Pawvy?
 
 OpenClaw agents work around your workspace, but their activity can be hard to track. You have no visibility into what they're doing until something breaks or gets committed.
 
-Clawboard watches your OpenClaw agents and projects together, so you get:
+Pawvy watches your OpenClaw agents and projects together, so you get:
 - **Visibility** into agent activity (tasks, sessions, commits)
 - **Context-aware views** (filter by branch or worktree)
 - **One board for everything** — no more jumping between project folders

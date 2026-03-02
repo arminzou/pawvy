@@ -10,13 +10,13 @@ describe('Projects API', () => {
   let previousProjectsDir: string | undefined;
 
   beforeEach(() => {
-    process.env.CLAWBOARD_API_KEY = '';
-    previousProjectsDir = process.env.CLAWBOARD_PROJECTS_DIR;
+    process.env.PAWVY_API_KEY = '';
+    previousProjectsDir = process.env.PAWVY_PROJECTS_DIR;
   });
 
   afterEach(() => {
     if (db) db.close();
-    process.env.CLAWBOARD_PROJECTS_DIR = previousProjectsDir;
+    process.env.PAWVY_PROJECTS_DIR = previousProjectsDir;
   });
 
   it('lists, gets, updates, and deletes projects', async () => {
@@ -85,10 +85,10 @@ describe('Projects API', () => {
     const appCtx = createTestApp();
     db = appCtx.db;
 
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'clawboard-discover-'));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'pawvy-discover-'));
     const discoveredDir = path.join(root, 'auto-project');
     fs.mkdirSync(discoveredDir, { recursive: true });
-    process.env.CLAWBOARD_PROJECTS_DIR = root;
+    process.env.PAWVY_PROJECTS_DIR = root;
 
     await request(appCtx.app)
       .post('/api/projects')

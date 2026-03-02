@@ -11,9 +11,9 @@ describe('OpenClaw API', () => {
   const tempDirs: string[] = [];
 
   beforeEach(() => {
-    process.env.CLAWBOARD_API_KEY = '';
-    delete process.env.CLAWBOARD_AGENTS_INCLUDE;
-    delete process.env.CLAWBOARD_INCLUDE_AGENTS;
+    process.env.PAWVY_API_KEY = '';
+    delete process.env.PAWVY_AGENTS_INCLUDE;
+    delete process.env.PAWVY_INCLUDE_AGENTS;
     delete process.env.OPENCLAW_HOME;
     resetConfigCacheForTests();
   });
@@ -38,7 +38,7 @@ describe('OpenClaw API', () => {
   });
 
   it('applies agent include filter from env', async () => {
-    process.env.CLAWBOARD_AGENTS_INCLUDE = 'tee, fay';
+    process.env.PAWVY_AGENTS_INCLUDE = 'tee, fay';
     resetConfigCacheForTests();
 
     const appCtx = createTestApp();
@@ -50,7 +50,7 @@ describe('OpenClaw API', () => {
   });
 
   it('prefers agents.list in openclaw.json for discovery', async () => {
-    const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'clawboard-oc-'));
+    const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'pawvy-oc-'));
     tempDirs.push(tempHome);
     fs.writeFileSync(
       path.join(tempHome, 'openclaw.json'),
@@ -70,7 +70,7 @@ describe('OpenClaw API', () => {
   });
 
   it('falls back to main when no list/workspace agent dirs are found', async () => {
-    const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'clawboard-oc-'));
+    const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'pawvy-oc-'));
     tempDirs.push(tempHome);
     process.env.OPENCLAW_HOME = tempHome;
     resetConfigCacheForTests();
@@ -84,7 +84,7 @@ describe('OpenClaw API', () => {
   });
 
   it('uses legacy workspace dir discovery when openclaw.json has no agents.list', async () => {
-    const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'clawboard-oc-'));
+    const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'pawvy-oc-'));
     tempDirs.push(tempHome);
     fs.writeFileSync(path.join(tempHome, 'openclaw.json'), JSON.stringify({ plugins: {} }), 'utf8');
     fs.mkdirSync(path.join(tempHome, 'workspace-fay'));

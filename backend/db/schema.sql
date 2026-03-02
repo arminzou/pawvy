@@ -1,4 +1,4 @@
--- Clawboard Database Schema
+-- Pawvy Database Schema
 
 -- Projects table (workspace discovery + grouping)
 CREATE TABLE IF NOT EXISTS projects (
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     completed_at DATETIME,
     archived_at DATETIME,
     project_id INTEGER,
-    context_key TEXT, -- e.g., 'projects/clawboard-ui-polish' or 'feature/branch-name'
+    context_key TEXT, -- e.g., 'projects/pawvy-ui-polish' or 'feature/branch-name'
     context_type TEXT, -- 'worktree' or 'branch'
     is_someday INTEGER DEFAULT 0, -- saved for later / someday/maybe flag
     CHECK (NOT (non_agent = 1 AND assigned_to_type = 'agent')),
@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS documents (
     doc_type_tag TEXT, -- optional semantic type: spec, runbook, reference, decision
     last_modified DATETIME,
     last_modified_by TEXT, -- 'tee', 'fay', 'armin', 'system'
-    last_accessed_at DATETIME, -- when an agent/human last opened/read this doc via Clawboard
+    last_accessed_at DATETIME, -- when an agent/human last opened/read this doc via Pawvy
     size_bytes INTEGER,
     git_status TEXT -- 'modified', 'added', 'deleted', 'untracked', 'clean'
 );

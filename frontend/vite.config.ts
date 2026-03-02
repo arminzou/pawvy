@@ -12,14 +12,14 @@ export default defineConfig(({ mode }) => {
 
   const apiBase = env.API_BASE || env.VITE_API_BASE || ''
   const wsBase = env.WS_BASE || env.VITE_WS_BASE || ''
-  const apiKey = env.CLAWBOARD_API_KEY || env.VITE_CLAWBOARD_API_KEY || ''
+  const apiKey = env.PAWVY_API_KEY || env.VITE_PAWVY_API_KEY || ''
 
   return {
     plugins: [react()],
     define: {
       'import.meta.env.VITE_API_BASE': JSON.stringify(apiBase),
       'import.meta.env.VITE_WS_BASE': JSON.stringify(wsBase),
-      'import.meta.env.VITE_CLAWBOARD_API_KEY': JSON.stringify(apiKey),
+      'import.meta.env.VITE_PAWVY_API_KEY': JSON.stringify(apiKey),
     },
     server: {
       port: 5173,

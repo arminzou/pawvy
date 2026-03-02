@@ -6,7 +6,7 @@ describe('Docs API', () => {
   let db: any;
 
   beforeEach(() => {
-    process.env.CLAWBOARD_API_KEY = '';
+    process.env.PAWVY_API_KEY = '';
   });
 
   afterEach(() => {

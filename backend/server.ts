@@ -14,8 +14,8 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 const PORT = Number(process.env.PORT ?? 3001);
 const HOST = String(process.env.HOST ?? '127.0.0.1');
-const BIND_RETRY_MAX_ATTEMPTS = Number(process.env.CLAWBOARD_BIND_RETRY_ATTEMPTS ?? 3);
-const BIND_RETRY_DELAY_MS = Number(process.env.CLAWBOARD_BIND_RETRY_DELAY_MS ?? 400);
+const BIND_RETRY_MAX_ATTEMPTS = Number(process.env.PAWVY_BIND_RETRY_ATTEMPTS ?? 3);
+const BIND_RETRY_DELAY_MS = Number(process.env.PAWVY_BIND_RETRY_DELAY_MS ?? 400);
 
 // Ensure DB directory exists (container may mount /app/data)
 fs.mkdirSync(path.dirname(config.dbPath), { recursive: true });
@@ -57,7 +57,7 @@ if (HAS_FRONTEND) {
 } else {
     app.get('/', (req, res) => {
         res.json({
-            name: 'Clawboard Backend',
+            name: 'Pawvy Backend',
             status: 'ok',
             api: {
                 health: '/api/health',
@@ -128,7 +128,7 @@ server.on('listening', () => {
 
     const baseUrl = `http://${HOST}:${PORT}`;
     const wsUrl = `ws://${HOST}:${PORT}/ws`;
-    console.log(`\n🚀 Clawboard Backend running on ${baseUrl}`);
+    console.log(`\n🚀 Pawvy Backend running on ${baseUrl}`);
     console.log(`📊 WebSocket endpoint: ${wsUrl}`);
     console.log(`💾 Database: ${config.dbPath}`);
     console.log(`🔑 API Key: ${config.apiKey}`);

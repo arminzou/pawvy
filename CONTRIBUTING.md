@@ -1,4 +1,4 @@
-# Contributing to Clawboard
+# Contributing to Pawvy
 
 Thanks for your interest! Here's how to get started.
 
@@ -6,8 +6,8 @@ Thanks for your interest! Here's how to get started.
 
 ```bash
 # Fork and clone
-git clone https://github.com/YOUR_USERNAME/clawboard.git
-cd clawboard
+git clone https://github.com/YOUR_USERNAME/pawvy.git
+cd pawvy
 
 # Install deps and init DB
 pnpm install
@@ -39,7 +39,7 @@ pnpm run dev
 
 ## Issues
 
-Found a bug or have a feature idea? [Open an issue](https://github.com/zoulogic/clawboard/issues)!
+Found a bug or have a feature idea? [Open an issue](https://github.com/zoulogic/pawvy/issues)!
 
 ---
 

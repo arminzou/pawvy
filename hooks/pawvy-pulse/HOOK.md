@@ -1,7 +1,7 @@
 ---
-name: clawboard-pulse
-description: "Sends heartbeat events to Clawboard for real-time agent presence tracking"
-homepage: https://github.com/zoulogic/clawboard
+name: pawvy-pulse
+description: "Sends heartbeat events to Pawvy for real-time agent presence tracking"
+homepage: https://github.com/zoulogic/pawvy
 metadata:
   openclaw:
     emoji: "💓"
@@ -14,20 +14,20 @@ metadata:
       - "message:sent"
 ---
 
-# Clawboard Pulse
+# Pawvy Pulse
 
-Reports agent events to Clawboard for real-time presence tracking and activity display.
+Reports agent events to Pawvy for real-time presence tracking and activity display.
 
 ## What It Does
 
-- Sends webhook notifications to Clawboard when agent events occur
-- Enables the agent presence display in Clawboard
+- Sends webhook notifications to Pawvy when agent events occur
+- Enables the agent presence display in Pawvy
 - Tracks agent status (active, thinking, idle, offline)
 
 ## Requirements
 
-- Clawboard must be running and accessible
-- `CLAWBOARD_WEBHOOK_URL` environment variable must be set
+- Pawvy must be running and accessible
+- `PAWVY_WEBHOOK_URL` environment variable must be set
 
 ## Configuration
 
@@ -35,7 +35,7 @@ Set the webhook URL via environment variable:
 
 ```bash
 # In your shell profile
-export CLAWBOARD_WEBHOOK_URL=http://localhost:3001/api/webhook/clawboard
+export PAWVY_WEBHOOK_URL=http://localhost:3001/api/webhook/pawvy
 ```
 
 Or configure in OpenClaw config:
@@ -45,10 +45,10 @@ Or configure in OpenClaw config:
   "hooks": {
     "internal": {
       "entries": {
-        "clawboard-pulse": {
+        "pawvy-pulse": {
           "enabled": true,
           "env": {
-            "CLAWBOARD_WEBHOOK_URL": "http://localhost:3001/api/webhook/clawboard"
+            "PAWVY_WEBHOOK_URL": "http://localhost:3001/api/webhook/pawvy"
           }
         }
       }

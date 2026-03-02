@@ -7,9 +7,9 @@ describe('Webhook API', () => {
   let db: any;
 
   beforeEach(() => {
-    process.env.CLAWBOARD_API_KEY = '';
-    delete process.env.CLAWBOARD_AGENTS_INCLUDE;
-    delete process.env.CLAWBOARD_INCLUDE_AGENTS;
+    process.env.PAWVY_API_KEY = '';
+    delete process.env.PAWVY_AGENTS_INCLUDE;
+    delete process.env.PAWVY_INCLUDE_AGENTS;
     resetConfigCacheForTests();
   });
 
@@ -23,7 +23,7 @@ describe('Webhook API', () => {
     db = appCtx.db;
 
     await request(appCtx.app)
-      .post('/api/webhook/clawboard')
+      .post('/api/webhook/pawvy')
       .send({
         event: 'agent:thinking',
         agentId: 'tee',
@@ -51,7 +51,7 @@ describe('Webhook API', () => {
     db = appCtx.db;
 
     await request(appCtx.app)
-      .post('/api/webhook/clawboard')
+      .post('/api/webhook/pawvy')
       .send({
         type: 'agent:idle',
         agent: 'tee',
@@ -80,7 +80,7 @@ describe('Webhook API', () => {
     db = appCtx.db;
 
     const res = await request(appCtx.app)
-      .post('/api/webhook/clawboard')
+      .post('/api/webhook/pawvy')
       .send({
         event: 'agent:thinking',
         agentId: 'tee',
@@ -101,7 +101,7 @@ describe('Webhook API', () => {
 
     for (const turnCount of invalidTurnCounts) {
       const res = await request(appCtx.app)
-        .post('/api/webhook/clawboard')
+        .post('/api/webhook/pawvy')
         .send({
           event: 'agent:thinking',
           agentId: 'tee',
@@ -116,7 +116,7 @@ describe('Webhook API', () => {
   });
 
   it('ignores disallowed agents when include filter is configured', async () => {
-    process.env.CLAWBOARD_AGENTS_INCLUDE = 'tee';
+    process.env.PAWVY_AGENTS_INCLUDE = 'tee';
     resetConfigCacheForTests();
 
     const broadcast = vi.fn();
@@ -124,7 +124,7 @@ describe('Webhook API', () => {
     db = appCtx.db;
 
     const res = await request(appCtx.app)
-      .post('/api/webhook/clawboard')
+      .post('/api/webhook/pawvy')
       .send({
         event: 'agent:thinking',
         agentId: 'fay',

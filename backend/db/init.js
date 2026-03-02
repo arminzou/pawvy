@@ -4,7 +4,7 @@ const path = require('path');
 const os = require('os');
 
 const dataHome = process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share');
-const DB_PATH = process.env.CLAWBOARD_DB_PATH || path.join(dataHome, 'clawboard', 'clawboard.db');
+const DB_PATH = process.env.PAWVY_DB_PATH || path.join(dataHome, 'pawvy', 'pawvy.db');
 const SCHEMA_PATH = path.join(__dirname, 'schema.sql');
 
 // Ensure data directory exists

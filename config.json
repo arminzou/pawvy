@@ -4,7 +4,7 @@
         // "infra": "~/projects/infrastructure",
         // "docs": "~/notes/product-docs"
     },
-    "scratch_root": "~/.local/share/clawboard/_misc",
+    "scratch_root": "~/.local/share/pawvy/_misc",
     "allow_scratch_fallback": true,
     "scratch_per_task": false,
     "scratch_cleanup_mode": "manual",

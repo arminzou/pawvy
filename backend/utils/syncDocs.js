@@ -6,7 +6,7 @@ const { getGitStatusMap } = require('./gitStatus');
 
 const WORKSPACE_ROOT = process.env.WORKSPACE_ROOT || path.resolve(__dirname, '../../..');
 const dataHome = process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share');
-const DB_PATH = process.env.CLAWBOARD_DB_PATH || path.join(dataHome, 'clawboard', 'clawboard.db');
+const DB_PATH = process.env.PAWVY_DB_PATH || path.join(dataHome, 'pawvy', 'pawvy.db');
 
 function walk(dir, fileList = []) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });

@@ -1,7 +1,7 @@
 {
-  "id": "clawboard-agent",
-  "name": "Clawboard Agent Tracker",
-  "description": "Tracks agent lifecycle events and reports to Clawboard for real-time agent display",
+  "id": "pawvy-agent",
+  "name": "Pawvy Agent Tracker",
+  "description": "Tracks agent lifecycle events and reports to Pawvy for real-time agent display",
   "version": "0.1.0",
   "openclaw": {
     "extensions": ["./index.ts"]
@@ -11,7 +11,7 @@
     "properties": {
       "webhookUrl": {
         "type": "string",
-        "description": "Clawboard webhook URL for agent status updates"
+        "description": "Pawvy webhook URL for agent status updates"
       },
       "idleTimeoutMs": {
         "type": "number",
@@ -23,7 +23,7 @@
   "uiHints": {
     "webhookUrl": {
       "label": "Webhook URL",
-      "placeholder": "http://localhost:3001/api/webhook/clawboard"
+      "placeholder": "http://localhost:3001/api/webhook/pawvy"
     },
     "idleTimeoutMs": {
       "label": "Idle Timeout (ms)",

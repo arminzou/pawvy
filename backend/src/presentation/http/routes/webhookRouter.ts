@@ -84,8 +84,8 @@ function coerceTurnCount(value: unknown): { value?: number; valid: boolean } {
 export function createWebhookRouter({ broadcast }: { broadcast: (data: unknown) => void }) {
   const router = express.Router();
 
-  // POST /api/webhook/clawboard - Receive events from OpenClaw clawboard-agent plugin
-  router.post('/clawboard', (req: Request, res: Response, next: NextFunction) => {
+  // POST /api/webhook/pawvy - Receive events from OpenClaw pawvy-agent plugin
+  router.post('/pawvy', (req: Request, res: Response, next: NextFunction) => {
     try {
       const body = (req.body ?? {}) as WebhookBody;
 
@@ -153,7 +153,7 @@ export function createWebhookRouter({ broadcast }: { broadcast: (data: unknown) 
     try {
       res.json({
         enabled: true,
-        url: `${req.protocol}://${req.get('host')}/api/webhook/clawboard`,
+        url: `${req.protocol}://${req.get('host')}/api/webhook/pawvy`,
         events: Object.keys(EVENT_STATUS_MAP),
       });
     } catch (err) {

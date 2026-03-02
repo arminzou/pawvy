@@ -2,7 +2,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
-  Clawboard base theme.
+  Pawvy base theme.
   Keep this minimal + boring: Tailwind does most of the work.
 */
 

@@ -38,11 +38,11 @@ function taskFixture(overrides: Partial<Task>): Task {
 }
 
 describe('AnchorService', () => {
-  const originalConfigEnv = process.env.CLAWBOARD_CONFIG;
+  const originalConfigEnv = process.env.PAWVY_CONFIG;
   let configPath: string;
 
   beforeEach(() => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'clawboard-anchor-test-'));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pawvy-anchor-test-'));
     configPath = path.join(dir, 'config.json');
     fs.writeFileSync(
       configPath,
@@ -51,7 +51,7 @@ describe('AnchorService', () => {
           category_defaults: {
             infra: '/tmp/category-infra',
           },
-          scratch_root: '/tmp/clawboard-scratch',
+          scratch_root: '/tmp/pawvy-scratch',
           allow_scratch_fallback: true,
           scratch_per_task: false,
         },
@@ -59,12 +59,12 @@ describe('AnchorService', () => {
         2,
       ),
     );
-    process.env.CLAWBOARD_CONFIG = configPath;
+    process.env.PAWVY_CONFIG = configPath;
     resetConfigCacheForTests();
   });
 
   afterEach(() => {
-    process.env.CLAWBOARD_CONFIG = originalConfigEnv;
+    process.env.PAWVY_CONFIG = originalConfigEnv;
     resetConfigCacheForTests();
   });
 
@@ -103,7 +103,7 @@ describe('AnchorService', () => {
     const task = taskFixture({ tags: ['none'] });
 
     const resolved = service.resolve(task);
-    expect(resolved.resolved_anchor).toBe('/tmp/clawboard-scratch');
+    expect(resolved.resolved_anchor).toBe('/tmp/pawvy-scratch');
     expect(resolved.anchor_source).toBe('scratch');
   });
 
@@ -136,7 +136,7 @@ describe('AnchorService', () => {
     const task = taskFixture({ anchor: '$MISSING_ENV/path' });
 
     const resolved = service.resolve(task);
-    expect(resolved.resolved_anchor).toBe('/tmp/clawboard-scratch');
+    expect(resolved.resolved_anchor).toBe('/tmp/pawvy-scratch');
     expect(resolved.anchor_source).toBe('scratch');
   });
 });

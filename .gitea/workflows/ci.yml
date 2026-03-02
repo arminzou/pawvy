@@ -1,4 +1,4 @@
-name: Clawboard CI
+name: Pawvy CI
 
 on:
   push:

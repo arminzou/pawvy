@@ -7,12 +7,12 @@ describe('API key middleware', () => {
 
   afterEach(() => {
     if (db) db.close();
-    process.env.CLAWBOARD_API_KEY = '';
+    process.env.PAWVY_API_KEY = '';
   });
 
   it('blocks requests without key when enabled', async () => {
     const testKey = 'test-secret-key-' + Date.now();
-    process.env.CLAWBOARD_API_KEY = testKey;
+    process.env.PAWVY_API_KEY = testKey;
     const appCtx = createTestApp();
     db = appCtx.db;
 

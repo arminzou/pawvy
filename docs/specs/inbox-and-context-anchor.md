@@ -2,18 +2,18 @@
 
 ## Summary
 
-This specification addresses the limitation of Clawboard's 1:1 project-to-directory model by introducing flexible "Context Anchors" for tasks that fall outside standard software projects (e.g., infrastructure, personal tasks). It establishes a strict invariant that all agent-executable tasks must resolve to a filesystem path. The solution introduces Manual Directory Registration for external paths, a Shared Scratch Workspace for homeless tasks, and a dedicated Inbox for non-agent reminders. This ensures agents always have a grounded environment for reasoning while accommodating miscellaneous human-centric to-dos.
+This specification addresses the limitation of Pawvy's 1:1 project-to-directory model by introducing flexible "Context Anchors" for tasks that fall outside standard software projects (e.g., infrastructure, personal tasks). It establishes a strict invariant that all agent-executable tasks must resolve to a filesystem path. The solution introduces Manual Directory Registration for external paths, a Shared Scratch Workspace for homeless tasks, and a dedicated Inbox for non-agent reminders. This ensures agents always have a grounded environment for reasoning while accommodating miscellaneous human-centric to-dos.
 
 ## Problem Statement
 
-Clawboard currently enforces a 1:1 mapping between a task project and a filesystem directory within `CLAWBOARD_PROJECTS_DIR`. While effective for standard software projects, this model fails for:
+Pawvy currently enforces a 1:1 mapping between a task project and a filesystem directory within `PAWVY_PROJECTS_DIR`. While effective for standard software projects, this model fails for:
 
 1.  **Infrastructure/Tooling:** Tasks affecting systems outside the projects directory (e.g., `~/.openclaw/` configuration).
 2.  **Miscellaneous/Personal:** Tasks with no natural project home.
 
 Creating virtual projects without directories solves the organizational issue but breaks agent context. Without a directory anchor, agents lack a knowledge base (git history, files) to reference.
 
-**Core Tension:** The directory is the primary mechanism for agent situational awareness. Removing it degrades Clawboard to a simple checklist for these tasks.
+**Core Tension:** The directory is the primary mechanism for agent situational awareness. Removing it degrades Pawvy to a simple checklist for these tasks.
 
 ## Design Invariant
 
@@ -24,7 +24,7 @@ A project or task with zero anchors is strictly a non-agent checklist item. Agen
 ## Proposed Solution
 
 ### 1. Manual Registration (External Directory Registration)
-Extends the project model to support directories outside `CLAWBOARD_PROJECTS_DIR`.
+Extends the project model to support directories outside `PAWVY_PROJECTS_DIR`.
 
 -   **Mechanism:** `POST /api/projects` accepts an explicit `path` field.
 -   **Behavior:** Auto-discovery continues as normal; manual registration supplements it.
@@ -34,7 +34,7 @@ Extends the project model to support directories outside `CLAWBOARD_PROJECTS_DIR
 ### 2. Shared Scratch Workspace
 Provides a default home for agent tasks that lack a specific project.
 
--   **Location:** Defined by `scratch_root` (Default: `~/.local/share/clawboard/_misc/`).
+-   **Location:** Defined by `scratch_root` (Default: `~/.local/share/pawvy/_misc/`).
 -   **Usage:** Agents use this directory to write `CONTEXT.md`, store notes, and record decisions.
 -   **Isolation:** Defaults to a single shared workspace. Per-task subdirectories (`<scratch_root>/tasks/<task-id>/`) are supported via config but disabled by default to keep low-volume tasks clean.
 -   **Enablement:** Used only when `allow_scratch_fallback: true`; when false, unresolved agent tasks are blocked.
@@ -59,7 +59,7 @@ Enforcement happens at task creation and execution time.
 ### 5. UI Anchor Visibility
 Resolved anchor context is visible before agent start and during task review.
 
--   **Task Card / Detail Chip:** Show a compact chip with source label + normalized path (example: `project: /home/armin/projects/clawboard`).
+-   **Task Card / Detail Chip:** Show a compact chip with source label + normalized path (example: `project: /home/armin/projects/pawvy`).
 -   **Source Labels:** `task`, `project`, `category`, `scratch`.
 
 ## Anchor Resolution Priority Chain
@@ -70,16 +70,16 @@ When an agent attempts to pick up a task, the context anchor is resolved in the 
 | :--- | :--- | :--- |
 | **1** | `task.anchor` | Explicit per-task override. |
 | **2** | `project root` | The registered directory of the selected project. |
-| **3** | `category_defaults` | Mapping from Clawboard config based on `task.category`. |
+| **3** | `category_defaults` | Mapping from Pawvy config based on `task.category`. |
 | **4** | `scratch_root` | If `allow_scratch_fallback: true`, resolve to `scratch_root` (`scratch_per_task: false`) or `<scratch_root>/tasks/<task-id>/` (`scratch_per_task: true`). |
 | **5** | **BLOCK** | If `allow_scratch_fallback: false` and no anchor was resolved from priorities 1-3. |
 
 ## Configuration Schema
 
-Configuration for defaults and scratch behavior resides in the **Clawboard config** (not `openclaw.json`) to maintain clean separation of concerns and support non-OpenClaw domains.
+Configuration for defaults and scratch behavior resides in the **Pawvy config** (not `openclaw.json`) to maintain clean separation of concerns and support non-OpenClaw domains.
 
--   **Format & Path:** JSON file at `~/.config/clawboard/config.json` by default.
--   **Override:** `CLAWBOARD_CONFIG` may point to an alternate config file path.
+-   **Format & Path:** JSON file at `~/.config/pawvy/config.json` by default.
+-   **Override:** `PAWVY_CONFIG` may point to an alternate config file path.
 
 **Minimal Schema:**
 
@@ -89,7 +89,7 @@ Configuration for defaults and scratch behavior resides in the **Clawboard confi
     "openclaw": "~/.openclaw/workspace-fay",
     "personal": "~/obsidian"
   },
-  "scratch_root": "~/.local/share/clawboard/_misc",
+  "scratch_root": "~/.local/share/pawvy/_misc",
   "allow_scratch_fallback": true,
   "scratch_per_task": false,
   "scratch_cleanup_mode": "manual",

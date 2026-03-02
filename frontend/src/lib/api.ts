@@ -163,7 +163,7 @@ export interface ClaudeTasksResponse {
 const API_BASE = ((import.meta as unknown as { env?: { VITE_API_BASE?: string } }).env?.VITE_API_BASE) ?? '';
 const API_BASE_CLEAN = API_BASE ? API_BASE.replace(/\/$/, '') : '';
 
-const API_KEY = ((import.meta as unknown as { env?: { VITE_CLAWBOARD_API_KEY?: string } }).env?.VITE_CLAWBOARD_API_KEY) ?? '';
+const API_KEY = ((import.meta as unknown as { env?: { VITE_PAWVY_API_KEY?: string } }).env?.VITE_PAWVY_API_KEY) ?? '';
 
 function authHeaders(extra?: Record<string, string>) {
   const h: Record<string, string> = { ...(extra ?? {}) };

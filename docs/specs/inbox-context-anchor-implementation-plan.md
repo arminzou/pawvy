@@ -2,7 +2,7 @@
 
 ## Context
 
-Clawboard's 1:1 project-to-directory model doesn't support tasks outside standard software projects (infrastructure, personal reminders). This feature introduces:
+Pawvy's 1:1 project-to-directory model doesn't support tasks outside standard software projects (infrastructure, personal reminders). This feature introduces:
 
 - **Typed assignees** (`assigned_to_type` + `assigned_to_id`) replacing the flat `assigned_to` string
 - **`non_agent` flag** for pure human tasks (inbox/reminders) that blocks agent dispatch
@@ -34,7 +34,7 @@ Clawboard's 1:1 project-to-directory model doesn't support tasks outside standar
 | `backend/src/repositories/projectRepository.ts` | Add `create()` method |
 | `backend/src/presentation/http/routes/tasksRouter.ts` | Wire new fields, enrich responses with anchor resolution |
 | `backend/src/presentation/http/routes/projectsRouter.ts` | Add `POST /` route for manual registration |
-| `backend/src/config.ts` | Extend `ClawboardConfigFile` with `scratch_root`, `category_defaults`; add getters |
+| `backend/src/config.ts` | Extend `PawvyConfigFile` with `scratch_root`, `category_defaults`; add getters |
 | `frontend/src/lib/api.ts` | Update Task type, API functions, add `createProject()` |
 | `frontend/src/components/layout/IconRail.tsx` | Add `'inbox'` to `AppTab`, add Inbox icon |
 | `frontend/src/App.tsx` | Add `/inbox` route, update tab detection |
@@ -284,7 +284,7 @@ Dependencies:
 |------|-------|
 | `hydrateTask()` pattern (DB row → domain) | `backend/src/repositories/taskRepository.ts` |
 | Table rebuild migration pattern | `backend/db/migrate.js` (migration 8) |
-| `readClawboardConfigFile()` / `resolveClawboardConfigPath()` | `backend/src/config.ts:181-197` |
+| `readPawvyConfigFile()` / `resolvePawvyConfigPath()` | `backend/src/config.ts:181-197` |
 | `useAgents()` hook (agent list for assignee dropdown) | `frontend/src/hooks/useAgents.ts` |
 | `MenuSelect` component (reuse in Inbox) | `frontend/src/pages/Kanban/TaskModals.tsx` |
 | `Chip` component (for anchor display) | `frontend/src/components/ui/Chip.tsx` |
@@ -297,7 +297,7 @@ Dependencies:
 
 ## Intentionally Deferred
 
-- **Dispatch-time anchor snapshot**: `resolved_anchor`/`anchor_source` are computed at read-time, not persisted. Will be snapshotted when Clawboard gains actual agent dispatch.
+- **Dispatch-time anchor snapshot**: `resolved_anchor`/`anchor_source` are computed at read-time, not persisted. Will be snapshotted when Pawvy gains actual agent dispatch.
 - **Scratch workspace directory auto-creation**: Referenced in config but not auto-created on disk.
 - **`scratch_per_task` / `scratch_cleanup_mode` / `scratch_ttl_days`**: Config fields from the spec are read but not actively enforced yet.
-- **Category defaults UI**: Config is read from `~/.clawboard/config.json`; no UI to edit it.
+- **Category defaults UI**: Config is read from `~/.pawvy/config.json`; no UI to edit it.

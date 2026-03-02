@@ -29,10 +29,10 @@ describe('Tasks API', () => {
   let previousConfigPath: string | undefined;
 
   beforeEach(() => {
-    process.env.CLAWBOARD_API_KEY = '';
-    previousConfigPath = process.env.CLAWBOARD_CONFIG;
+    process.env.PAWVY_API_KEY = '';
+    previousConfigPath = process.env.PAWVY_CONFIG;
 
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'clawboard-tasks-router-'));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pawvy-tasks-router-'));
     const cfgPath = path.join(dir, 'config.json');
     fs.writeFileSync(
       cfgPath,
@@ -43,14 +43,14 @@ describe('Tasks API', () => {
       }),
     );
 
-    process.env.CLAWBOARD_CONFIG = cfgPath;
+    process.env.PAWVY_CONFIG = cfgPath;
     resetConfigCacheForTests();
   });
 
   afterEach(() => {
     if (db) db.close();
     db = null;
-    process.env.CLAWBOARD_CONFIG = previousConfigPath;
+    process.env.PAWVY_CONFIG = previousConfigPath;
     resetConfigCacheForTests();
   });
 
@@ -100,7 +100,7 @@ describe('Tasks API', () => {
 
     const project = appCtx.db
       .prepare('INSERT INTO projects (name, slug, path) VALUES (?, ?, ?)')
-      .run('Clawboard', 'clawboard', '/tmp/clawboard-project');
+      .run('Pawvy', 'pawvy', '/tmp/pawvy-project');
     const projectId = Number(project.lastInsertRowid);
 
     await request(appCtx.app)
@@ -111,7 +111,7 @@ describe('Tasks API', () => {
     const list = await request(appCtx.app).get('/api/tasks').expect(200);
     const task = (list.body as TaskLike[])[0];
 
-    expect(task.resolved_anchor).toBe('/tmp/clawboard-project');
+    expect(task.resolved_anchor).toBe('/tmp/pawvy-project');
     expect(task.anchor_source).toBe('project');
   });
 
@@ -183,7 +183,7 @@ describe('Tasks API', () => {
 
     const project = appCtx.db
       .prepare('INSERT INTO projects (name, slug, path) VALUES (?, ?, ?)')
-      .run('Clawboard', 'clawboard', '/tmp/clawboard-project');
+      .run('Pawvy', 'pawvy', '/tmp/pawvy-project');
     const projectId = Number(project.lastInsertRowid);
 
     const taskA = await request(appCtx.app)

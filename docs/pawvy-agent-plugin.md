@@ -1,8 +1,8 @@
-# Clawboard Agent Plugin
+# Pawvy Agent Plugin
 
 ## Overview
 
-A native OpenClaw plugin that tracks agent lifecycle events and reports real-time status to Clawboard for the Agent display.
+A native OpenClaw plugin that tracks agent lifecycle events and reports real-time status to Pawvy for the Agent display.
 
 ## Architecture
 
@@ -23,8 +23,8 @@ gateway_stop        ──► webhook: agent:offline
 
 | File | Purpose |
 |------|---------|
-| `extensions/clawboard-agent/index.ts` | Plugin source (loaded directly by OpenClaw) |
-| `extensions/clawboard-agent/openclaw.plugin.json` | Plugin manifest |
+| `extensions/pawvy-agent/index.ts` | Plugin source (loaded directly by OpenClaw) |
+| `extensions/pawvy-agent/openclaw.plugin.json` | Plugin manifest |
 | `backend/src/presentation/http/routes/webhookRouter.ts` | Receives webhook POSTs |
 
 OpenClaw loads the plugin directly from this repo via `plugins.load.paths` in `openclaw.json`. No copy step — edits here are live after a gateway restart:
@@ -52,13 +52,13 @@ The idle timeout prevents rapid thinking→idle flickering for multi-turn intera
 {
   "plugins": {
     "load": {
-      "paths": ["/home/armin/projects/clawboard/extensions"]
+      "paths": ["/home/armin/projects/pawvy/extensions"]
     },
     "entries": {
-      "clawboard-agent": {
+      "pawvy-agent": {
         "enabled": true,
         "config": {
-          "webhookUrl": "http://127.0.0.1:3001/api/webhook/clawboard",
+          "webhookUrl": "http://127.0.0.1:3001/api/webhook/pawvy",
           "idleTimeoutMs": 5000
         }
       }
@@ -67,14 +67,14 @@ The idle timeout prevents rapid thinking→idle flickering for multi-turn intera
 }
 ```
 
-`plugins.load.paths` tells OpenClaw to scan the clawboard extensions directory. Without it, the plugin won't be discovered and the entry in `plugins.entries` will fail validation with `plugin not found: clawboard-agent`.
+`plugins.load.paths` tells OpenClaw to scan the pawvy extensions directory. Without it, the plugin won't be discovered and the entry in `plugins.entries` will fail validation with `plugin not found: pawvy-agent`.
 
 Config is validated against `openclaw.plugin.json`'s `configSchema` at load time. A schema validation error will show the plugin as `error` in `openclaw plugins list`.
 
 **Optional:** suppress the non-bundled plugin warning by adding it to `plugins.allow`:
 
 ```bash
-openclaw config set plugins.allow '["discord","telegram","minimax-portal-auth","clawboard-agent"]'
+openclaw config set plugins.allow '["discord","telegram","minimax-portal-auth","pawvy-agent"]'
 ```
 
 ## Webhook Payload
@@ -112,11 +112,11 @@ const fs = require('fs');
 const p = require('os').homedir() + '/.openclaw/openclaw.json';
 const cfg = JSON.parse(fs.readFileSync(p, 'utf8'));
 cfg.plugins ??= {};
-cfg.plugins.load = { paths: ['/home/armin/projects/clawboard/extensions'] };
+cfg.plugins.load = { paths: ['/home/armin/projects/pawvy/extensions'] };
 cfg.plugins.entries ??= {};
-cfg.plugins.entries['clawboard-agent'] = {
+cfg.plugins.entries['pawvy-agent'] = {
   enabled: true,
-  config: { webhookUrl: 'http://127.0.0.1:3001/api/webhook/clawboard', idleTimeoutMs: 5000 }
+  config: { webhookUrl: 'http://127.0.0.1:3001/api/webhook/pawvy', idleTimeoutMs: 5000 }
 };
 fs.writeFileSync(p, JSON.stringify(cfg, null, 2));
 "
@@ -134,7 +134,7 @@ openclaw gateway restart
 ### 1. Check the plugin is loaded
 
 ```bash
-openclaw plugins list | grep -A3 clawboard
+openclaw plugins list | grep -A3 pawvy
 ```
 
 Expected: `Status: loaded`. If `disabled`, the entry is missing from `openclaw.json`. If `error`, check the config schema or the error message in the list.
@@ -145,22 +145,22 @@ The plugin uses `api.logger`, which routes through OpenClaw's logging subsystem.
 
 ```bash
 # Live stream (preferred)
-openclaw logs --follow 2>&1 | grep clawboard-agent
+openclaw logs --follow 2>&1 | grep pawvy-agent
 
 # Or via journald if the gateway is unresponsive
-journalctl _PID=$(pgrep -f "openclaw-gateway$") -f | grep clawboard-agent
+journalctl _PID=$(pgrep -f "openclaw-gateway$") -f | grep pawvy-agent
 ```
 
 On a working gateway you should see at startup:
 ```
-[gateway] [clawboard-agent] registered · webhookUrl=(set) · idleTimeoutMs=5000
-[gateway] [clawboard-agent] gateway online
+[gateway] [pawvy-agent] registered · webhookUrl=(set) · idleTimeoutMs=5000
+[gateway] [pawvy-agent] gateway online
 ```
 
 On an agent turn:
 ```
-[gateway] [clawboard-agent] fay → thinking
-[gateway] [clawboard-agent] fay → idle
+[gateway] [pawvy-agent] fay → thinking
+[gateway] [pawvy-agent] fay → idle
 ```
 
 If you see `registered · webhookUrl=(not set)` — the config wasn't applied. Edit `openclaw.json` and restart the gateway.
@@ -169,12 +169,12 @@ If you see `registered · webhookUrl=(not set)` — the config wasn't applied. E
 
 ```bash
 # Simulate thinking event
-curl -s -X POST http://127.0.0.1:3001/api/webhook/clawboard \
+curl -s -X POST http://127.0.0.1:3001/api/webhook/pawvy \
   -H "Content-Type: application/json" \
   -d '{"event":"agent:thinking","agentId":"tee","status":"thinking","thought":"I am thinking...","timestamp":"'$(date -u +%Y-%m-%dT%H:%M:%S.000Z)'"}'
 
 # Simulate idle event
-curl -s -X POST http://127.0.0.1:3001/api/webhook/clawboard \
+curl -s -X POST http://127.0.0.1:3001/api/webhook/pawvy \
   -H "Content-Type: application/json" \
   -d '{"event":"agent:idle","agentId":"tee","status":"idle","timestamp":"'$(date -u +%Y-%m-%dT%H:%M:%S.000Z)'"}'
 ```
@@ -194,7 +194,7 @@ Avoid using Tee for quick tests — Tee's agentic style tends to use multiple to
 ### 5. Check openclaw.json config applied
 
 ```bash
-openclaw config get plugins.entries.clawboard-agent
+openclaw config get plugins.entries.pawvy-agent
 ```
 
 Expected output:
@@ -202,7 +202,7 @@ Expected output:
 {
   "enabled": true,
   "config": {
-    "webhookUrl": "http://127.0.0.1:3001/api/webhook/clawboard",
+    "webhookUrl": "http://127.0.0.1:3001/api/webhook/pawvy",
     "idleTimeoutMs": 5000
   }
 }
@@ -212,11 +212,11 @@ Expected output:
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| `plugin not found: clawboard-agent` on gateway start | `plugins.load.paths` missing from `openclaw.json` | Edit `openclaw.json` directly to add `plugins.load.paths` (see Deployment) |
-| Plugin shows `disabled` | Entry missing from `openclaw.json` | Add `plugins.entries.clawboard-agent` with `enabled: true` |
+| `plugin not found: pawvy-agent` on gateway start | `plugins.load.paths` missing from `openclaw.json` | Edit `openclaw.json` directly to add `plugins.load.paths` (see Deployment) |
+| Plugin shows `disabled` | Entry missing from `openclaw.json` | Add `plugins.entries.pawvy-agent` with `enabled: true` |
 | Plugin shows `error` | Config schema validation failed | Check `openclaw plugins list` error detail; fix the config JSON |
-| `registered · webhookUrl=(not set)` in logs | `webhookUrl` not in config | Set it in `plugins.entries.clawboard-agent.config`, restart gateway |
+| `registered · webhookUrl=(not set)` in logs | `webhookUrl` not in config | Set it in `plugins.entries.pawvy-agent.config`, restart gateway |
 | Thinking fires, idle never fires | `agent_end` not reached — long agentic run still in progress | Normal — idle fires after the run completes + timeout |
-| `gateway_start` sends `agentId: "*"` | Expected on fresh boot before any agent has run | Clawboard should treat `*` as "all agents are idle" |
-| Webhook returns non-200 | Clawboard backend not running | `cd backend && pnpm dev` |
-| Warning: `plugins.allow is empty` | Non-bundled plugin loaded without explicit allowlist | Safe to ignore, or add `clawboard-agent` to `plugins.allow` |
+| `gateway_start` sends `agentId: "*"` | Expected on fresh boot before any agent has run | Pawvy should treat `*` as "all agents are idle" |
+| Webhook returns non-200 | Pawvy backend not running | `cd backend && pnpm dev` |
+| Warning: `plugins.allow is empty` | Non-bundled plugin loaded without explicit allowlist | Safe to ignore, or add `pawvy-agent` to `plugins.allow` |

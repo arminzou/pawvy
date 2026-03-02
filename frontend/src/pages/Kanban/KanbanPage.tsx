@@ -949,7 +949,7 @@ export function KanbanPage({
     }
   }, [refresh]);
 
-  const projectName = currentProject?.name ?? (currentProjectId === null ? 'All Projects' : 'Clawboard');
+  const projectName = currentProject?.name ?? (currentProjectId === null ? 'All Projects' : 'Pawvy');
   const boardName = 'Tasks';
 
 

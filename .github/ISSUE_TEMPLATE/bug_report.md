@@ -17,7 +17,7 @@ What should happen instead.
 
 ## Environment
 - OS: 
-- Clawboard version: 
+- Pawvy version: 
 
 ## Screenshots
 If applicable.

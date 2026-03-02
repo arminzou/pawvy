@@ -1,26 +1,26 @@
 services:
-  clawboard:
+  pawvy:
     build:
       context: .
       args:
-        - CLAWBOARD_API_KEY=${CLAWBOARD_API_KEY}
+        - PAWVY_API_KEY=${PAWVY_API_KEY}
         - API_BASE=${API_BASE}
         - WS_BASE=${WS_BASE}
-    container_name: clawboard
+    container_name: pawvy
     restart: always
     ports:
-      - "${CLAWBOARD_PORT:-3001}:3001"
+      - "${PAWVY_PORT:-3001}:3001"
     env_file:
       - .env
     environment:
       # Fixed container path for database (volume maps host data dir to /app/data)
-      - CLAWBOARD_DB_PATH=/app/data/clawboard.db
+      - PAWVY_DB_PATH=/app/data/pawvy.db
       # Keep runtime paths container-local even when .env uses host paths for mounts
-      - CLAWBOARD_PROJECTS_DIR=/app/workspace-projects
+      - PAWVY_PROJECTS_DIR=/app/workspace-projects
       - OPENCLAW_HOME=/app/openclaw
     volumes:
-      # User-provided host paths from .env (CLAWBOARD_DATA_DIR, CLAWBOARD_PROJECTS_DIR, OPENCLAW_HOME)
+      # User-provided host paths from .env (PAWVY_DATA_DIR, PAWVY_PROJECTS_DIR, OPENCLAW_HOME)
       # These map host directories to fixed container paths
-      - ${CLAWBOARD_DATA_DIR:-./data}:/app/data
-      - ${CLAWBOARD_PROJECTS_DIR:-${HOME}/.clawboard/projects}:/app/workspace-projects:ro
+      - ${PAWVY_DATA_DIR:-./data}:/app/data
+      - ${PAWVY_PROJECTS_DIR:-${HOME}/.pawvy/projects}:/app/workspace-projects:ro
       - ${OPENCLAW_HOME:-${HOME}/.openclaw}:/app/openclaw:ro

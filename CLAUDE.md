@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
-## What Is Clawboard?
+## What Is Pawvy?
 
 A **local-first command center for OpenClaw users** — a real-time Kanban board that tracks what you and your OpenClaw agents are working on.
 
@@ -48,13 +48,13 @@ Copy `.env.example` to `.env` in the project root. Key variables:
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `CLAWBOARD_API_KEY` | — | Bearer token for API auth (required) |
-| `CLAWBOARD_DB_PATH` | `~/.local/share/clawboard/clawboard.db` | SQLite path |
-| `CLAWBOARD_PROJECTS_DIR` | — | Directory to scan for projects |
+| `PAWVY_API_KEY` | — | Bearer token for API auth (required) |
+| `PAWVY_DB_PATH` | `~/.local/share/pawvy/pawvy.db` | SQLite path |
+| `PAWVY_PROJECTS_DIR` | — | Directory to scan for projects |
 | `AUTO_SYNC` | `false` | Enable periodic activity/doc sync |
 | `PORT` / `HOST` | `3001` / `127.0.0.1` | Server bind |
 
-Frontend reads `VITE_API_BASE` and `VITE_CLAWBOARD_API_KEY` from `frontend/.env.local`.
+Frontend reads `VITE_API_BASE` and `VITE_PAWVY_API_KEY` from `frontend/.env.local`.
 
 ---
 

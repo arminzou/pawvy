@@ -38,7 +38,7 @@ export default function register(api: OpenClawPluginApi) {
     }
   }
 
-  // Send a status webhook to Clawboard.
+  // Send a status webhook to Pawvy.
   // fireAndForget: skip awaiting (use during shutdown to avoid blocking).
   async function sendStatus(
     agentId: string,
@@ -85,11 +85,11 @@ export default function register(api: OpenClawPluginApi) {
           signal: controller.signal,
         });
         if (!res.ok) {
-          logger.warn(`[clawboard-agent] webhook ${res.status} for ${agentId}:${status}`);
+          logger.warn(`[pawvy-agent] webhook ${res.status} for ${agentId}:${status}`);
         }
       } catch (err: unknown) {
         if ((err as { name?: string }).name !== "AbortError") {
-          logger.warn(`[clawboard-agent] webhook error for ${agentId}: ${(err as Error).message}`);
+          logger.warn(`[pawvy-agent] webhook error for ${agentId}: ${(err as Error).message}`);
         }
       } finally {
         clearTimeout(timer);
@@ -151,7 +151,7 @@ export default function register(api: OpenClawPluginApi) {
     void sendStatus(agentId, "thinking", { fireAndForget: true, thought, turnCount: state.turnCount });
   }
 
-  logger.info(`[clawboard-agent] registered · webhookUrl=${webhookUrl ? "(set)" : "(not set)"} · idleTimeoutMs=${idleTimeoutMs}`);
+  logger.info(`[pawvy-agent] registered · webhookUrl=${webhookUrl ? "(set)" : "(not set)"} · idleTimeoutMs=${idleTimeoutMs}`);
 
   // Modifying hook — OpenClaw awaits this before the agent runs.
   // Must stay fast: set state, fire webhook with timeout, return.
@@ -170,7 +170,7 @@ export default function register(api: OpenClawPluginApi) {
 
     state.status = "thinking";
     state.lastThought = nextThought;
-    logger.info(`[clawboard-agent] ${agentId} → thinking (turn 1)`);
+    logger.info(`[pawvy-agent] ${agentId} → thinking (turn 1)`);
     await sendStatus(agentId, "thinking", { thought: nextThought, turnCount: state.turnCount });
   });
 
@@ -210,7 +210,7 @@ export default function register(api: OpenClawPluginApi) {
         current.lastThought = undefined;
         // Don't reset turnCount here, so we can see how many turns the last run took?
         // But status is idle, so turnCount display might disappear.
-        logger.info(`[clawboard-agent] ${agentId} → idle`);
+        logger.info(`[pawvy-agent] ${agentId} → idle`);
         await sendStatus(agentId, "idle");
       }
     }, idleTimeoutMs);
@@ -242,7 +242,7 @@ export default function register(api: OpenClawPluginApi) {
       // First boot before any agent has run — broadcast to all.
       await sendStatus("*", "idle");
     }
-    logger.info("[clawboard-agent] gateway online");
+    logger.info("[pawvy-agent] gateway online");
   });
 
   // Void hook — gateway shutting down. Fire-and-forget: don't hold up shutdown
@@ -259,6 +259,6 @@ export default function register(api: OpenClawPluginApi) {
     } else {
       void sendStatus("*", "offline", { fireAndForget: true });
     }
-    logger.info("[clawboard-agent] gateway offline");
+    logger.info("[pawvy-agent] gateway offline");
   });
 }

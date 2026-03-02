@@ -28,8 +28,8 @@ export function IconRail({
       <button
         type="button"
         className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/30 bg-white/16 text-sm font-black tracking-[0.08em] text-white shadow-[0_4px_14px_rgb(2_6_23/0.22)] transition hover:bg-white/22"
-        title="Clawboard"
-        aria-label="Clawboard"
+        title="Pawvy"
+        aria-label="Pawvy"
         onClick={() => onTab('kanban')}
       >
         <PawPrint size={18} strokeWidth={2.4} />

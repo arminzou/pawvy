@@ -8,7 +8,7 @@ export function applyCommonMiddleware(app: Express): void {
   // Body parsing
   app.use(express.json());
 
-  // Optional auth (only enforced when CLAWBOARD_API_KEY is set)
+  // Optional auth (only enforced when PAWVY_API_KEY is set)
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { requireApiKey } = require('../../../../utils/auth');
   app.use('/api', requireApiKey({ allowPaths: ['/health', '/webhook'] }));

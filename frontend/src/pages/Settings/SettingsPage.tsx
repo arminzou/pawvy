@@ -86,7 +86,7 @@ export function SettingsPage() {
         <div>
           <h2 className="text-lg font-semibold text-[rgb(var(--cb-text))]">Agents</h2>
           <div className="text-sm text-[rgb(var(--cb-text-muted))]">
-            Cosmetic profile fields for agent display in Clawboard.
+            Cosmetic profile fields for agent display in Pawvy.
           </div>
         </div>
         <Button variant="secondary" onClick={() => void refresh()} disabled={loading}>
@@ -231,7 +231,7 @@ export function SettingsPage() {
           <div>
             <div className="text-sm font-semibold text-[rgb(var(--cb-text))]">Claude Native Tasks</div>
             <div className="text-xs text-[rgb(var(--cb-text-muted))]">
-              Linked view from `~/.claude/tasks` with status, dependencies, and mapped Clawboard task hints.
+              Linked view from `~/.claude/tasks` with status, dependencies, and mapped Pawvy task hints.
             </div>
           </div>
           <Button variant="secondary" size="sm" disabled={claudeLoading} onClick={() => void refreshClaudeTasks()}>
@@ -279,7 +279,7 @@ export function SettingsPage() {
                       <th className="px-2 py-1.5">Status</th>
                       <th className="px-2 py-1.5">Deps</th>
                       <th className="px-2 py-1.5">Updated</th>
-                      <th className="px-2 py-1.5">Clawboard Mapping</th>
+                      <th className="px-2 py-1.5">Pawvy Mapping</th>
                     </tr>
                   </thead>
                   <tbody>

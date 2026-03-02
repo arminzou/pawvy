@@ -6,7 +6,7 @@ describe('Activities API', () => {
   let db: any;
 
   beforeEach(() => {
-    process.env.CLAWBOARD_API_KEY = '';
+    process.env.PAWVY_API_KEY = '';
   });
 
   afterEach(() => {
@@ -60,9 +60,9 @@ describe('Activities API', () => {
     db = appCtx.db;
 
     const project = db.prepare('INSERT INTO projects (name, slug, path) VALUES (?, ?, ?)').run(
-      'Clawboard',
-      'clawboard',
-      '/tmp/clawboard',
+      'Pawvy',
+      'pawvy',
+      '/tmp/pawvy',
     );
     const projectId = Number(project.lastInsertRowid);
 

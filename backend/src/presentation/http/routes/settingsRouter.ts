@@ -1,5 +1,5 @@
 import express, { type NextFunction, type Request, type Response } from 'express';
-import { config, listKnownAgentIdsForSettings, updateClawboardAgentProfile } from '../../../config';
+import { config, listKnownAgentIdsForSettings, updatePawvyAgentProfile } from '../../../config';
 import { HttpError } from '../errors/httpError';
 
 type AgentSettingsRow = {
@@ -88,7 +88,7 @@ export function createSettingsRouter() {
         throw new HttpError(400, 'No fields to update');
       }
 
-      updateClawboardAgentProfile(agentId, patch);
+      updatePawvyAgentProfile(agentId, patch);
       res.json(resolveAgentSetting(agentId));
     } catch (err) {
       next(err);

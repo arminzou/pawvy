@@ -3,14 +3,14 @@ networks:
     external: true
 
 services:
-  clawboard:
+  pawvy:
     networks:
       - default
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.clawboard.rule=Host(`${CLAWBOARD_HOST:-clawboard.localhost}`)"
-      - "traefik.http.routers.clawboard.entrypoints=${TRAEFIK_ENTRYPOINTS:-web}"
-      - "traefik.http.routers.clawboard.tls=${TRAEFIK_TLS:-false}"
-      - "traefik.http.services.clawboard.loadbalancer.server.port=3001"
+      - "traefik.http.routers.pawvy.rule=Host(`${PAWVY_HOST:-pawvy.localhost}`)"
+      - "traefik.http.routers.pawvy.entrypoints=${TRAEFIK_ENTRYPOINTS:-web}"
+      - "traefik.http.routers.pawvy.tls=${TRAEFIK_TLS:-false}"
+      - "traefik.http.services.pawvy.loadbalancer.server.port=3001"
       - "traefik.docker.network=${TRAEFIK_DOCKER_NETWORK:-proxy}"

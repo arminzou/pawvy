@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-const THEME_STORAGE_KEY = 'clawboard.theme';
+const THEME_STORAGE_KEY = 'pawvy.theme';
 
 export type ThemePreference = 'light' | 'dark' | 'system';
 export type ResolvedTheme = 'light' | 'dark';

@@ -1,19 +1,19 @@
-# OpenClaw + Clawboard Integration
+# OpenClaw + Pawvy Integration
 
-This document describes the real-time integration between OpenClaw and Clawboard.
+This document describes the real-time integration between OpenClaw and Pawvy.
 
 ## Overview
 
-The integration enables Clawboard to display real-time agent presence and activity from OpenClaw via webhooks and WebSockets.
+The integration enables Pawvy to display real-time agent presence and activity from OpenClaw via webhooks and WebSockets.
 
 ## Architecture
 
 ```
-OpenClaw                    Clawboard                    Frontend
+OpenClaw                    Pawvy                    Frontend
     │                           │                            │
     │  sessions.reset           │                            │
     │ ──────────────────────>  │                            │
-    │  chat:start              │  POST /api/webhook/clawboard│
+    │  chat:start              │  POST /api/webhook/pawvy│
     │ ──────────────────────>  │ ───────────────────────>   │
     │                          │     broadcast(             │
     │                          │       agent_status_updated)│
@@ -36,17 +36,17 @@ Configuration in `openclaw.json`:
 ```json
 {
   "webhook": {
-    "urls": ["http://localhost:3001/api/webhook/clawboard"],
+    "urls": ["http://localhost:3001/api/webhook/pawvy"],
     "secret": "optional-shared-secret"
   }
 }
 ```
 
-### 2. Clawboard Webhook Endpoint (`/api/webhook/clawboard`)
+### 2. Pawvy Webhook Endpoint (`/api/webhook/pawvy`)
 
 Receives events from OpenClaw and broadcasts to WebSocket clients.
 
-**Endpoint:** `POST /api/webhook/clawboard`
+**Endpoint:** `POST /api/webhook/pawvy`
 
 **Request Body:**
 ```json
@@ -68,7 +68,7 @@ Receives events from OpenClaw and broadcasts to WebSocket clients.
 **Features:**
 - No API key required (auth bypassed for webhook endpoints)
 - Broadcasts `agent_status_updated` events to all connected WebSocket clients
-- Supports prefix matching for webhook paths (e.g., `/webhook/clawboard`)
+- Supports prefix matching for webhook paths (e.g., `/webhook/pawvy`)
 
 ### 3. Auth Bypass Configuration
 
@@ -90,7 +90,7 @@ React component in sidebar showing agent status UI.
 **Features:**
 - Deterministic avatar/personality fallback for any `agentId`
 - Optional profile overrides from config/plugin metadata
-- Optional include filter to only surface selected agents (`CLAWBOARD_AGENTS_INCLUDE` or `~/.clawboard/config.json`)
+- Optional include filter to only surface selected agents (`PAWVY_AGENTS_INCLUDE` or `~/.pawvy/config.json`)
 - Status indicator with color coding:
   - `thinking` - 🤔 Yellow (processing)
   - `idle` - 😴 Gray (waiting)
@@ -99,7 +99,7 @@ React component in sidebar showing agent status UI.
 - Last activity timestamp
 
 **Profile Source Priority:**
-1. `~/.clawboard/agent-profiles.json` (or `CLAWBOARD_AGENT_PROFILES_PATH`)
+1. `~/.pawvy/agent-profiles.json` (or `PAWVY_AGENT_PROFILES_PATH`)
 2. `<openclaw-home>/agent-profiles.json` (or `OPENCLAW_AGENT_PROFILES_PATH`)
 3. Deterministic defaults generated from `agentId`
 
@@ -111,7 +111,7 @@ Handles incoming webhook events from OpenClaw.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/api/webhook/clawboard` | Receive OpenClaw events |
+| POST | `/api/webhook/pawvy` | Receive OpenClaw events |
 | GET | `/api/webhook/config` | Get webhook configuration |
 
 **Event Types Processed:**
@@ -152,7 +152,7 @@ GET /api/webhook/config
 Response:
 {
   "enabled": true,
-  "url": "http://localhost:3001/api/webhook/clawboard",
+  "url": "http://localhost:3001/api/webhook/pawvy",
   "events": ["agent:thinking", "agent:idle", "agent:offline", "gateway:online", "gateway:offline"]
 }
 ```

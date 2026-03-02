@@ -12,10 +12,10 @@ cd "$DEPLOY_DIR"
 
 # Optional personal override (not tracked in this repo).
 # If present and executable, it fully controls deployment behavior.
-OVERRIDE_SCRIPT="${CLAWBOARD_DEPLOY_OVERRIDE:-$HOME/.clawboard/deploy.override.sh}"
+OVERRIDE_SCRIPT="${PAWVY_DEPLOY_OVERRIDE:-$HOME/.pawvy/deploy.override.sh}"
 if [ -x "$OVERRIDE_SCRIPT" ]; then
   echo "[deploy] Using override script: $OVERRIDE_SCRIPT"
-  APP_DIR="$DEPLOY_DIR" CLAWBOARD_DEPLOY_DIR="$DEPLOY_DIR" "$OVERRIDE_SCRIPT"
+  APP_DIR="$DEPLOY_DIR" PAWVY_DEPLOY_DIR="$DEPLOY_DIR" "$OVERRIDE_SCRIPT"
   exit 0
 fi
 

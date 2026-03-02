@@ -14,11 +14,11 @@ describe('Settings API', () => {
   let profilesPath: string;
 
   beforeEach(() => {
-    process.env.CLAWBOARD_API_KEY = '';
+    process.env.PAWVY_API_KEY = '';
     previousOpenClawHome = process.env.OPENCLAW_HOME;
-    previousAgentProfilesPath = process.env.CLAWBOARD_AGENT_PROFILES_PATH;
+    previousAgentProfilesPath = process.env.PAWVY_AGENT_PROFILES_PATH;
 
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'clawboard-settings-router-'));
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pawvy-settings-router-'));
     openClawHome = path.join(tempDir, 'openclaw');
     fs.mkdirSync(openClawHome, { recursive: true });
     fs.writeFileSync(
@@ -29,7 +29,7 @@ describe('Settings API', () => {
 
     profilesPath = path.join(tempDir, 'agent-profiles.json');
     process.env.OPENCLAW_HOME = openClawHome;
-    process.env.CLAWBOARD_AGENT_PROFILES_PATH = profilesPath;
+    process.env.PAWVY_AGENT_PROFILES_PATH = profilesPath;
     resetConfigCacheForTests();
   });
 
@@ -37,7 +37,7 @@ describe('Settings API', () => {
     if (db) db.close();
     db = null;
     process.env.OPENCLAW_HOME = previousOpenClawHome;
-    process.env.CLAWBOARD_AGENT_PROFILES_PATH = previousAgentProfilesPath;
+    process.env.PAWVY_AGENT_PROFILES_PATH = previousAgentProfilesPath;
     resetConfigCacheForTests();
   });
 

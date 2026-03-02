@@ -6,10 +6,10 @@ COPY frontend/package*.json ./
 RUN npm install --include=dev
 COPY frontend/ ./
 # Pass frontend env vars during build so they're baked into the static JS
-ARG CLAWBOARD_API_KEY
+ARG PAWVY_API_KEY
 ARG API_BASE
 ARG WS_BASE
-ENV CLAWBOARD_API_KEY=$CLAWBOARD_API_KEY
+ENV PAWVY_API_KEY=$PAWVY_API_KEY
 ENV API_BASE=$API_BASE
 ENV WS_BASE=$WS_BASE
 RUN npm run build
@@ -46,7 +46,7 @@ COPY --from=build-frontend /app/frontend/dist /app/frontend/dist
 
 # Create data directory for SQLite
 RUN mkdir -p /app/data
-ENV CLAWBOARD_DB_PATH=/app/data/clawboard.db
+ENV PAWVY_DB_PATH=/app/data/pawvy.db
 ENV NODE_ENV=production
 ENV PORT=3001
 ENV HOST=0.0.0.0

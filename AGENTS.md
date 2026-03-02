@@ -3,7 +3,7 @@
 **More details about this repo:** see [CLAUDE.md](./CLAUDE.md).
 
 ## Project Structure & Module Organization
-Clawboard is a monorepo with separate backend and frontend apps.
+Pawvy is a monorepo with separate backend and frontend apps.
 
 - `backend/`: Express + TypeScript API, SQLite access, WebSocket hub.
   - `src/presentation/http/routes/`: HTTP route handlers.
@@ -13,7 +13,7 @@ Clawboard is a monorepo with separate backend and frontend apps.
 - `frontend/`: React + TypeScript + Vite UI.
   - `src/pages/`: page-level features (Kanban, Activity, Docs).
   - `src/components/`: shared UI and layout components.
-- `extensions/clawboard-agent/`: OpenClaw plugin integration.
+- `extensions/pawvy-agent/`: OpenClaw plugin integration.
 - `docs/`: implementation docs and roadmap context.
 
 ## Build, Test, and Development Commands
@@ -72,5 +72,5 @@ Use `pnpm` from repo root.
 
 ## Security & Configuration Tips
 - Never commit secrets. Use `.env` and `.env.example`.
-- API auth uses `CLAWBOARD_API_KEY`; frontend reads `VITE_CLAWBOARD_API_KEY`.
+- API auth uses `PAWVY_API_KEY`; frontend reads `VITE_PAWVY_API_KEY`.
 - For task management, update task state via API endpoints, not direct DB edits.

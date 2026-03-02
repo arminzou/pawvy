@@ -2,9 +2,9 @@ import type { HookHandler } from "../../src/hooks/hooks.js";
 
 const handler: HookHandler = async (event) => {
   // Get webhook URL from environment
-  const webhookUrl = process.env.CLAWBOARD_WEBHOOK_URL;
+  const webhookUrl = process.env.PAWVY_WEBHOOK_URL;
   if (!webhookUrl) {
-    console.log("[clawboard-pulse] CLAWBOARD_WEBHOOK_URL not set, skipping");
+    console.log("[pawvy-pulse] PAWVY_WEBHOOK_URL not set, skipping");
     return;
   }
 
@@ -50,14 +50,14 @@ const handler: HookHandler = async (event) => {
 
     if (!response.ok) {
       console.error(
-        `[clawboard-pulse] Webhook failed: ${response.status} ${response.statusText}`
+        `[pawvy-pulse] Webhook failed: ${response.status} ${response.statusText}`
       );
     } else {
-      console.log(`[clawboard-pulse] Sent ${event.action || event.type} for ${agentId}`);
+      console.log(`[pawvy-pulse] Sent ${event.action || event.type} for ${agentId}`);
     }
   } catch (err) {
     console.error(
-      "[clawboard-pulse] Webhook error:",
+      "[pawvy-pulse] Webhook error:",
       err instanceof Error ? err.message : String(err)
     );
   }

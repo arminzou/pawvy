@@ -10,7 +10,7 @@ export default defineConfig({
   use: {
     baseURL: FRONTEND_URL,
     trace: 'retain-on-failure',
-    extraHTTPHeaders: process.env.CLAWBOARD_API_KEY ? { Authorization: `Bearer ${process.env.CLAWBOARD_API_KEY}` } : {},
+    extraHTTPHeaders: process.env.PAWVY_API_KEY ? { Authorization: `Bearer ${process.env.PAWVY_API_KEY}` } : {},
   },
   webServer: {
     command: 'pnpm run dev',

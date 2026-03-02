@@ -6,9 +6,9 @@ const path = require('path');
  * Returns { discovered: number }
  */
 function syncProjects(db, broadcast = null) {
-  // Prefer CLAWBOARD_PROJECTS_DIR, but keep PROJECTS_ROOT as legacy fallback
+  // Prefer PAWVY_PROJECTS_DIR, but keep PROJECTS_ROOT as legacy fallback
   const projectsRoots = (
-    process.env.CLAWBOARD_PROJECTS_DIR ||
+    process.env.PAWVY_PROJECTS_DIR ||
     process.env.PROJECTS_ROOT ||
     path.join(require('os').homedir(), 'projects')
   ).split(path.delimiter);

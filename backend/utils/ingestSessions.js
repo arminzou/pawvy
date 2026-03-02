@@ -29,8 +29,8 @@ function inferAgentFromPath(p) {
 
 function ingestSessions({ agents = DEFAULT_AGENTS } = {}) {
   const dataHome = process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share');
-  const defaultDbPath = path.join(dataHome, 'clawboard', 'clawboard.db');
-  const dbPath = process.env.CLAWBOARD_DB_PATH || defaultDbPath;
+  const defaultDbPath = path.join(dataHome, 'pawvy', 'pawvy.db');
+  const dbPath = process.env.PAWVY_DB_PATH || defaultDbPath;
 
   // Ensure DB directory exists
   fs.mkdirSync(path.dirname(dbPath), { recursive: true });

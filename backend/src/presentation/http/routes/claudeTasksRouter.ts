@@ -71,7 +71,7 @@ function normalizeTaskRecord(raw: unknown, sourceFile: string): ClaudeTaskRow | 
   const inferredTitle = normalizeTaskTitle(value);
   if (!inferredId && !inferredTitle) return null;
 
-  const mappedTaskIdRaw = value.clawboard_task_id ?? value.task_id ?? null;
+  const mappedTaskIdRaw = value.pawvy_task_id ?? value.task_id ?? null;
   const mappedFromBody = mappedTaskIdRaw == null ? null : Number(mappedTaskIdRaw);
   const mappedFromTitle = inferredTitle.match(/#(\d+)/)?.[1];
   const mappedTaskId = Number.isInteger(mappedFromBody)

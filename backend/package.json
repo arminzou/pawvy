@@ -1,5 +1,5 @@
 {
-  "name": "clawboard-backend",
+  "name": "pawvy-backend",
   "version": "1.0.0",
   "description": "Backend for agent project management dashboard",
   "main": "dist/server.js",

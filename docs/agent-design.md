@@ -54,7 +54,7 @@ Agents should have distinct personalities without relying on hardcoded IDs. The 
 - **Per-agent color accent** — derive from stable agent profile so each agent is recognizable at a glance.
 - **Distinct avatars** — use profile-provided emoji/SVG when available, deterministic fallback otherwise.
 - **Source priority** — resolve identity from:
-  1. Clawboard config overrides
+  1. Pawvy config overrides
   2. Plugin metadata hints
   3. Generated deterministic defaults
 
@@ -64,7 +64,7 @@ Agents should have distinct personalities without relying on hardcoded IDs. The 
 
 The widget knows status but nothing about *what* the agent is doing — the most useful missing signal.
 
-- **Task link** — when a session is linked to a Clawboard task (Phase 12), show the task title in the card: `"Working on #47 — Fix auth flow"`. Click to jump to the task.
+- **Task link** — when a session is linked to a Pawvy task (Phase 12), show the task title in the card: `"Working on #47 — Fix auth flow"`. Click to jump to the task.
 - **Project / branch context** — show the git branch or project name: `"on feature/auth"`.
 - **"Working on..." summary** — if the plugin emits the first user message of the session, show it truncated in the card.
 

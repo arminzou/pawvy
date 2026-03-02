@@ -1,5 +1,5 @@
 function getExpectedKey() {
-  const key = process.env.CLAWBOARD_API_KEY;
+  const key = process.env.PAWVY_API_KEY;
   if (!key) return null;
   const trimmed = String(key).trim();
   return trimmed ? trimmed : null;
@@ -31,7 +31,7 @@ function extractProvidedKey(req) {
 
 function requireApiKey(opts = {}) {
   const { allowPaths = [] } = opts;
-  return function clawboardAuthMiddleware(req, res, next) {
+  return function pawvyAuthMiddleware(req, res, next) {
     const expected = getExpectedKey();
     if (!expected) return next();
 

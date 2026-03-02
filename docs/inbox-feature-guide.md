@@ -4,7 +4,7 @@ This guide explains the new Inbox and context-anchor behavior in practical terms
 
 ## Key Concepts (First-Time User)
 
-- **Anchor**: the folder Clawboard treats as the task's working context.
+- **Anchor**: the folder Pawvy treats as the task's working context.
   - For agent tasks, this is the directory used for files/history/context.
   - For Inbox reminders (`non_agent: true`), an anchor is not required.
 
@@ -13,12 +13,12 @@ This guide explains the new Inbox and context-anchor behavior in practical terms
   - Set in config under `category_defaults`.
 
 - **Scratch folder**: the final fallback workspace when no task/project/category anchor resolves.
-  - Default: `~/.local/share/clawboard/_misc`
+  - Default: `~/.local/share/pawvy/_misc`
   - Controlled by `scratch_root`, `allow_scratch_fallback`, and `scratch_per_task`.
 
 ## What This Feature Does
 
-Clawboard now supports two kinds of tasks:
+Pawvy now supports two kinds of tasks:
 
 - **Agent work tasks**: tasks intended for agents, tied to a filesystem context.
 - **Inbox reminders**: personal checklist items for humans (`non_agent: true`), not for agent execution.
@@ -46,7 +46,7 @@ These tasks are excluded from Kanban’s default board feed.
 
 ## How Anchor Resolution Works
 
-For agent-eligible tasks (`non_agent: false`), Clawboard computes a `resolved_anchor` with this priority:
+For agent-eligible tasks (`non_agent: false`), Pawvy computes a `resolved_anchor` with this priority:
 
 1. `task.anchor` (explicit task override)
 2. `project.path` (if task has a project)
@@ -108,7 +108,7 @@ New:
 - `POST /api/projects`
   - manual project registration with explicit `path`
 
-## Config Keys (Clawboard Config)
+## Config Keys (Pawvy Config)
 
 - `category_defaults`
 - `scratch_root`
@@ -117,22 +117,22 @@ New:
 - `scratch_cleanup_mode`
 - `scratch_ttl_days`
 
-You can override config file location with `CLAWBOARD_CONFIG`.
+You can override config file location with `PAWVY_CONFIG`.
 
 ## How To Set `category_defaults` (Step-by-Step)
 
 Use this when you want tasks with specific tags/categories to automatically resolve to a folder.
 
 1. Decide where your config file is.
-   - Default preferred path: `~/.config/clawboard/config.json`
-   - Legacy fallback path: `~/.clawboard/config.json`
-   - Optional override: set `CLAWBOARD_CONFIG=/absolute/path/to/config.json`
+   - Default preferred path: `~/.config/pawvy/config.json`
+   - Legacy fallback path: `~/.pawvy/config.json`
+   - Optional override: set `PAWVY_CONFIG=/absolute/path/to/config.json`
 
 2. Create the config directory/file if needed.
    - Example:
    ```bash
-   mkdir -p ~/.config/clawboard
-   touch ~/.config/clawboard/config.json
+   mkdir -p ~/.config/pawvy
+   touch ~/.config/pawvy/config.json
    ```
 
 3. Add a `category_defaults` section.
@@ -146,13 +146,13 @@ Use this when you want tasks with specific tags/categories to automatically reso
        "infra": "~/projects/infrastructure",
        "docs": "~/notes/product-docs"
      },
-     "scratch_root": "~/.local/share/clawboard/_misc",
+     "scratch_root": "~/.local/share/pawvy/_misc",
      "allow_scratch_fallback": true,
      "scratch_per_task": false
    }
    ```
 
-4. Save the file and restart Clawboard backend.
+4. Save the file and restart Pawvy backend.
    - Config is read and cached; restart ensures new values are loaded.
 
 5. Tag tasks with one of the mapped keys.

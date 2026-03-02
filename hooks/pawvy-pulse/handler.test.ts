@@ -32,13 +32,13 @@ function parseBody(fetchCall: unknown[]): Record<string, unknown> {
   return JSON.parse(options.body);
 }
 
-describe("clawboard-pulse", () => {
+describe("pawvy-pulse", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    delete process.env.CLAWBOARD_WEBHOOK_URL;
+    delete process.env.PAWVY_WEBHOOK_URL;
   });
 
-  it("should skip if CLAWBOARD_WEBHOOK_URL is not set", async () => {
+  it("should skip if PAWVY_WEBHOOK_URL is not set", async () => {
     const event = createMockEvent("command", "new", "agent:tee:main");
 
     await handler(event);
@@ -47,7 +47,7 @@ describe("clawboard-pulse", () => {
   });
 
   it("should send webhook on command:new", async () => {
-    process.env.CLAWBOARD_WEBHOOK_URL = "http://localhost:3001/api/webhook/clawboard";
+    process.env.PAWVY_WEBHOOK_URL = "http://localhost:3001/api/webhook/pawvy";
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       status: 200,
@@ -61,7 +61,7 @@ describe("clawboard-pulse", () => {
     await handler(event);
 
     expect(global.fetch).toHaveBeenCalledWith(
-      "http://localhost:3001/api/webhook/clawboard",
+      "http://localhost:3001/api/webhook/pawvy",
       expect.objectContaining({
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -77,7 +77,7 @@ describe("clawboard-pulse", () => {
   });
 
   it("should send webhook on command:reset", async () => {
-    process.env.CLAWBOARD_WEBHOOK_URL = "http://localhost:3001/api/webhook/clawboard";
+    process.env.PAWVY_WEBHOOK_URL = "http://localhost:3001/api/webhook/pawvy";
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       status: 200,
@@ -93,7 +93,7 @@ describe("clawboard-pulse", () => {
   });
 
   it("should send webhook on gateway:startup", async () => {
-    process.env.CLAWBOARD_WEBHOOK_URL = "http://localhost:3001/api/webhook/clawboard";
+    process.env.PAWVY_WEBHOOK_URL = "http://localhost:3001/api/webhook/pawvy";
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       status: 200,
@@ -110,7 +110,7 @@ describe("clawboard-pulse", () => {
   });
 
   it("should handle fetch errors gracefully", async () => {
-    process.env.CLAWBOARD_WEBHOOK_URL = "http://localhost:3001/api/webhook/clawboard";
+    process.env.PAWVY_WEBHOOK_URL = "http://localhost:3001/api/webhook/pawvy";
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: false,
       status: 500,
@@ -124,14 +124,14 @@ describe("clawboard-pulse", () => {
 
     expect(consoleSpy).toHaveBeenCalled();
     // Just check that it was called (format may vary)
-    expect(consoleSpy.mock.calls[0][0]).toContain("[clawboard-pulse]");
+    expect(consoleSpy.mock.calls[0][0]).toContain("[pawvy-pulse]");
     expect(consoleSpy.mock.calls[0][0]).toContain("Webhook failed");
 
     consoleSpy.mockRestore();
   });
 
   it("should handle network errors gracefully", async () => {
-    process.env.CLAWBOARD_WEBHOOK_URL = "http://localhost:3001/api/webhook/clawboard";
+    process.env.PAWVY_WEBHOOK_URL = "http://localhost:3001/api/webhook/pawvy";
     (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("Network error"));
 
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -140,14 +140,14 @@ describe("clawboard-pulse", () => {
     await handler(event);
 
     expect(consoleSpy).toHaveBeenCalled();
-    expect(consoleSpy.mock.calls[0][0]).toContain("[clawboard-pulse]");
+    expect(consoleSpy.mock.calls[0][0]).toContain("[pawvy-pulse]");
     expect(consoleSpy.mock.calls[0][0]).toContain("Webhook error");
 
     consoleSpy.mockRestore();
   });
 
   it("should extract agentId from sessionKey correctly", async () => {
-    process.env.CLAWBOARD_WEBHOOK_URL = "http://localhost:3001/api/webhook/clawboard";
+    process.env.PAWVY_WEBHOOK_URL = "http://localhost:3001/api/webhook/pawvy";
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       status: 200,
@@ -171,7 +171,7 @@ describe("clawboard-pulse", () => {
   });
 
   it("should send webhook on message:received", async () => {
-    process.env.CLAWBOARD_WEBHOOK_URL = "http://localhost:3001/api/webhook/clawboard";
+    process.env.PAWVY_WEBHOOK_URL = "http://localhost:3001/api/webhook/pawvy";
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       status: 200,
@@ -196,7 +196,7 @@ describe("clawboard-pulse", () => {
   });
 
   it("should send webhook on message:sent", async () => {
-    process.env.CLAWBOARD_WEBHOOK_URL = "http://localhost:3001/api/webhook/clawboard";
+    process.env.PAWVY_WEBHOOK_URL = "http://localhost:3001/api/webhook/pawvy";
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       status: 200,

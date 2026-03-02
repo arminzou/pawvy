@@ -1,6 +1,6 @@
-# Roadmap — Clawboard 🗺
+# Roadmap — Pawvy 🗺
 
-This document is the living plan for Clawboard. It tracks where we've been and where we're going.
+This document is the living plan for Pawvy. It tracks where we've been and where we're going.
 
 ## ✅ Completed Phases (Archived)
 
@@ -18,7 +18,7 @@ This document is the living plan for Clawboard. It tracks where we've been and w
 
 ## 🚧 Phase 11: OpenClaw Integration (Completed ✅)
 
-*Making Clawboard "Just Work" with OpenClaw.*
+*Making Pawvy "Just Work" with OpenClaw.*
 
 ### Documentation
 
@@ -26,7 +26,7 @@ See `docs/` for detailed guides:
 - [`docs/openclaw-integration.md`](docs/openclaw-integration.md) — WebSocket, webhook system, agent component
 - [`docs/openclaw-auto-detect.md`](docs/openclaw-auto-detect.md) — Auto-detect workspace, agent discovery
 - [`docs/auto-generate-api-key.md`](docs/auto-generate-api-key.md) — Auto-generated API key mechanism
-- [`docs/clawboard-agent-plugin.md`](docs/clawboard-agent-plugin.md) — Native plugin for accurate agent lifecycle tracking
+- [`docs/pawvy-agent-plugin.md`](docs/pawvy-agent-plugin.md) — Native plugin for accurate agent lifecycle tracking
 
 ### Features Delivered
 
@@ -41,14 +41,14 @@ See `docs/` for detailed guides:
 
 ### Native Plugin for Real-Time Agent Status
 
-Replaced the external `clawboard-pulse` hook with a native OpenClaw plugin (`clawboard-agent`) that subscribes to agent lifecycle events via `api.on()`:
+Replaced the external `pawvy-pulse` hook with a native OpenClaw plugin (`pawvy-agent`) that subscribes to agent lifecycle events via `api.on()`:
 
 - `before_agent_start` → Thinking (modifying hook — 3s fetch timeout so it never delays agents)
 - `agent_end` + idle timer → Idle
 - `session_start` → Idle (if not mid-run)
 - `gateway_start` / `gateway_stop` → Online / Offline
 
-Plugin loads directly from `extensions/clawboard-agent/` via `plugins.load.paths` — no copy step needed. Uses `api.logger` so lifecycle events appear in `openclaw logs`. See [`docs/clawboard-agent-plugin.md`](docs/clawboard-agent-plugin.md) for full details and debug guide.
+Plugin loads directly from `extensions/pawvy-agent/` via `plugins.load.paths` — no copy step needed. Uses `api.logger` so lifecycle events appear in `openclaw logs`. See [`docs/pawvy-agent-plugin.md`](docs/pawvy-agent-plugin.md) for full details and debug guide.
 
 ### Known Issues (Phase 11.1)
 
@@ -69,7 +69,7 @@ Plugin loads directly from `extensions/clawboard-agent/` via `plugins.load.paths
 
 #### 3. Real-Time Session Stream
 - [x] OpenClaw emits events via internal hooks (command:new, message:received, etc.)
-- [x] Clawboard webhook receives events
+- [x] Pawvy webhook receives events
 - [ ] Frontend receives WebSocket broadcast — **BLOCKED by Phase 11.1 WebSocket issue**
 
 #### 4. Context Awareness

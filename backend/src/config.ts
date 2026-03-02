@@ -8,13 +8,13 @@ const BACKEND_ROOT = process.cwd();
 
 // Lazy resolver - called at runtime, not module load
 function resolveDbPath(): string {
-  const raw = process.env.CLAWBOARD_DB_PATH;
+  const raw = process.env.PAWVY_DB_PATH;
   if (raw) {
     // Relative to backend root, or absolute
     return raw.startsWith('/') ? raw : path.resolve(BACKEND_ROOT, raw);
   }
-  // Default: ~/.local/share/clawboard/clawboard.db
-  return path.join(os.homedir(), '.local', 'share', 'clawboard', 'clawboard.db');
+  // Default: ~/.local/share/pawvy/pawvy.db
+  return path.join(os.homedir(), '.local', 'share', 'pawvy', 'pawvy.db');
 }
 
 // db/ lives at backend-root/db/
@@ -158,10 +158,10 @@ function readAgentProfileFile(filePath: string | null): AgentProfileMap {
   }
 }
 
-function resolveClawboardAgentProfilesPath(): string {
-  const raw = process.env.CLAWBOARD_AGENT_PROFILES_PATH;
+function resolvePawvyAgentProfilesPath(): string {
+  const raw = process.env.PAWVY_AGENT_PROFILES_PATH;
   if (raw) return raw.startsWith('/') ? raw : path.resolve(BACKEND_ROOT, raw);
-  return path.join(getClawboardDir(), 'agent-profiles.json');
+  return path.join(getPawvyDir(), 'agent-profiles.json');
 }
 
 function resolvePluginAgentProfilesPath(): string | null {
@@ -202,7 +202,7 @@ function writeJsonFile(filePath: string, payload: unknown): void {
   fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
 }
 
-type ClawboardConfigFile = {
+type PawvyConfigFile = {
   agents?: {
     include?: unknown;
   };
@@ -215,26 +215,26 @@ type ClawboardConfigFile = {
   scratch_ttl_days?: unknown;
 };
 
-function resolveClawboardConfigPath(): string {
-  const raw = process.env.CLAWBOARD_CONFIG ?? process.env.CLAWBOARD_CONFIG_PATH;
+function resolvePawvyConfigPath(): string {
+  const raw = process.env.PAWVY_CONFIG ?? process.env.PAWVY_CONFIG_PATH;
   if (raw) return raw.startsWith('/') ? raw : path.resolve(BACKEND_ROOT, raw);
 
-  const xdgDefault = path.join(os.homedir(), '.config', 'clawboard', 'config.json');
+  const xdgDefault = path.join(os.homedir(), '.config', 'pawvy', 'config.json');
   if (fs.existsSync(xdgDefault)) return xdgDefault;
 
   // Backward-compatible fallback for existing installs.
-  const legacyDefault = path.join(getClawboardDir(), 'config.json');
+  const legacyDefault = path.join(getPawvyDir(), 'config.json');
   if (fs.existsSync(legacyDefault)) return legacyDefault;
 
   return xdgDefault;
 }
 
-function readClawboardConfigFile(filePath: string): ClawboardConfigFile {
+function readPawvyConfigFile(filePath: string): PawvyConfigFile {
   if (!fs.existsSync(filePath)) return {};
   try {
     const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
-    return parsed as ClawboardConfigFile;
+    return parsed as PawvyConfigFile;
   } catch (err) {
     console.warn(`[config] Failed to parse config file ${filePath}:`, err);
     return {};
@@ -242,14 +242,14 @@ function readClawboardConfigFile(filePath: string): ClawboardConfigFile {
 }
 
 function parseAgentIncludeListFromEnv(): AgentIncludeList {
-  const raw = process.env.CLAWBOARD_AGENTS_INCLUDE ?? process.env.CLAWBOARD_INCLUDE_AGENTS;
+  const raw = process.env.PAWVY_AGENTS_INCLUDE ?? process.env.PAWVY_INCLUDE_AGENTS;
   if (raw == null) return null;
   const parsed = normalizeAgentIds(String(raw).split(','));
   // Empty env should be treated as "no restriction", not "show none".
   return parsed.length ? parsed : null;
 }
 
-function parseAgentIncludeListFromConfigFile(cfg: ClawboardConfigFile): AgentIncludeList {
+function parseAgentIncludeListFromConfigFile(cfg: PawvyConfigFile): AgentIncludeList {
   const candidate = cfg?.agents?.include ?? cfg?.includeAgents;
   if (candidate === undefined) return null;
   if (!Array.isArray(candidate)) return null;
@@ -275,7 +275,7 @@ function resolvePathValue(raw: string): string {
   return path.resolve(value);
 }
 
-function parseCategoryDefaults(cfg: ClawboardConfigFile): Record<string, string> {
+function parseCategoryDefaults(cfg: PawvyConfigFile): Record<string, string> {
   const raw = cfg.category_defaults;
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
 
@@ -291,30 +291,30 @@ function parseCategoryDefaults(cfg: ClawboardConfigFile): Record<string, string>
   return out;
 }
 
-function parseScratchRoot(cfg: ClawboardConfigFile): string {
+function parseScratchRoot(cfg: PawvyConfigFile): string {
   const raw = cfg.scratch_root;
   if (typeof raw === 'string' && raw.trim()) {
     const resolved = resolvePathValue(raw);
     if (resolved) return resolved;
   }
-  return path.join(os.homedir(), '.local', 'share', 'clawboard', '_misc');
+  return path.join(os.homedir(), '.local', 'share', 'pawvy', '_misc');
 }
 
-function parseAllowScratchFallback(cfg: ClawboardConfigFile): boolean {
+function parseAllowScratchFallback(cfg: PawvyConfigFile): boolean {
   if (typeof cfg.allow_scratch_fallback === 'boolean') return cfg.allow_scratch_fallback;
   return true;
 }
 
-function parseScratchPerTask(cfg: ClawboardConfigFile): boolean {
+function parseScratchPerTask(cfg: PawvyConfigFile): boolean {
   if (typeof cfg.scratch_per_task === 'boolean') return cfg.scratch_per_task;
   return false;
 }
 
-function parseScratchCleanupMode(cfg: ClawboardConfigFile): 'manual' | 'ttl' {
+function parseScratchCleanupMode(cfg: PawvyConfigFile): 'manual' | 'ttl' {
   return cfg.scratch_cleanup_mode === 'ttl' ? 'ttl' : 'manual';
 }
 
-function parseScratchTtlDays(cfg: ClawboardConfigFile): number | null {
+function parseScratchTtlDays(cfg: PawvyConfigFile): number | null {
   const mode = parseScratchCleanupMode(cfg);
   if (mode !== 'ttl') return null;
   const raw = cfg.scratch_ttl_days;
@@ -322,20 +322,20 @@ function parseScratchTtlDays(cfg: ClawboardConfigFile): number | null {
   return null;
 }
 
-let _clawboardConfigFile: ClawboardConfigFile | null = null;
+let _pawvyConfigFile: PawvyConfigFile | null = null;
 
-function getClawboardConfigFile(): ClawboardConfigFile {
-  if (_clawboardConfigFile == null) {
-    _clawboardConfigFile = readClawboardConfigFile(resolveClawboardConfigPath());
+function getPawvyConfigFile(): PawvyConfigFile {
+  if (_pawvyConfigFile == null) {
+    _pawvyConfigFile = readPawvyConfigFile(resolvePawvyConfigPath());
   }
-  return _clawboardConfigFile;
+  return _pawvyConfigFile;
 }
 
 function resolveAgentIncludeList(): AgentIncludeList {
   const fromEnv = parseAgentIncludeListFromEnv();
   if (fromEnv !== null) return fromEnv;
 
-  const cfg = getClawboardConfigFile();
+  const cfg = getPawvyConfigFile();
   return parseAgentIncludeListFromConfigFile(cfg);
 }
 
@@ -345,38 +345,38 @@ function isAgentIncluded(agentId: string, includeList: AgentIncludeList): boolea
   return includeList.includes(normalizeAgentId(agentId));
 }
 
-// Default projects directory: ~/.clawboard/projects
+// Default projects directory: ~/.pawvy/projects
 function resolveProjectsDir(): string {
-  const raw = process.env.CLAWBOARD_PROJECTS_DIR;
+  const raw = process.env.PAWVY_PROJECTS_DIR;
   if (raw) {
     return raw.startsWith('/') ? raw : path.resolve(BACKEND_ROOT, raw);
   }
-  return path.join(os.homedir(), '.clawboard', 'projects');
+  return path.join(os.homedir(), '.pawvy', 'projects');
 }
 
-// Clawboard data directory
-function getClawboardDir(): string {
-  return path.join(os.homedir(), '.clawboard');
+// Pawvy data directory
+function getPawvyDir(): string {
+  return path.join(os.homedir(), '.pawvy');
 }
 
-// Ensure clawboard directory exists
-function ensureClawboardDir(): string {
-  const dir = getClawboardDir();
+// Ensure pawvy directory exists
+function ensurePawvyDir(): string {
+  const dir = getPawvyDir();
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
   return dir;
 }
 
-// API key: generate if not provided, store in ~/.clawboard/api-key
+// API key: generate if not provided, store in ~/.pawvy/api-key
 function resolveApiKey(): string {
   // 1. Use env var if set
-  if (process.env.CLAWBOARD_API_KEY) {
-    return process.env.CLAWBOARD_API_KEY;
+  if (process.env.PAWVY_API_KEY) {
+    return process.env.PAWVY_API_KEY;
   }
 
   // 2. Check file
-  const keyFile = path.join(getClawboardDir(), 'api-key');
+  const keyFile = path.join(getPawvyDir(), 'api-key');
   if (fs.existsSync(keyFile)) {
     return fs.readFileSync(keyFile, 'utf8').trim();
   }
@@ -405,7 +405,7 @@ export function resetConfigCacheForTests() {
   _agentProfiles = null;
   _pluginAgentProfiles = null;
   _includedAgents = undefined;
-  _clawboardConfigFile = null;
+  _pawvyConfigFile = null;
   _categoryDefaults = null;
   _scratchRoot = null;
   _allowScratchFallback = undefined;
@@ -429,8 +429,8 @@ export const config = {
     return resolveApiKey();
   },
 
-  get clawboardDir(): string {
-    return ensureClawboardDir();
+  get pawvyDir(): string {
+    return ensurePawvyDir();
   },
 
   get openclaw(): ReturnType<typeof detectOpenClaw> {
@@ -442,7 +442,7 @@ export const config = {
 
   get agentProfiles(): AgentProfileMap {
     if (_agentProfiles == null) {
-      _agentProfiles = readAgentProfileFile(resolveClawboardAgentProfilesPath());
+      _agentProfiles = readAgentProfileFile(resolvePawvyAgentProfilesPath());
     }
     return _agentProfiles;
   },
@@ -463,42 +463,42 @@ export const config = {
 
   get categoryDefaults(): Record<string, string> {
     if (_categoryDefaults == null) {
-      _categoryDefaults = parseCategoryDefaults(getClawboardConfigFile());
+      _categoryDefaults = parseCategoryDefaults(getPawvyConfigFile());
     }
     return _categoryDefaults;
   },
 
   get scratchRoot(): string {
     if (_scratchRoot == null) {
-      _scratchRoot = parseScratchRoot(getClawboardConfigFile());
+      _scratchRoot = parseScratchRoot(getPawvyConfigFile());
     }
     return _scratchRoot;
   },
 
   get allowScratchFallback(): boolean {
     if (_allowScratchFallback === undefined) {
-      _allowScratchFallback = parseAllowScratchFallback(getClawboardConfigFile());
+      _allowScratchFallback = parseAllowScratchFallback(getPawvyConfigFile());
     }
     return _allowScratchFallback;
   },
 
   get scratchPerTask(): boolean {
     if (_scratchPerTask === undefined) {
-      _scratchPerTask = parseScratchPerTask(getClawboardConfigFile());
+      _scratchPerTask = parseScratchPerTask(getPawvyConfigFile());
     }
     return _scratchPerTask;
   },
 
   get scratchCleanupMode(): 'manual' | 'ttl' {
     if (_scratchCleanupMode === undefined) {
-      _scratchCleanupMode = parseScratchCleanupMode(getClawboardConfigFile());
+      _scratchCleanupMode = parseScratchCleanupMode(getPawvyConfigFile());
     }
     return _scratchCleanupMode;
   },
 
   get scratchTtlDays(): number | null {
     if (_scratchTtlDays === undefined) {
-      _scratchTtlDays = parseScratchTtlDays(getClawboardConfigFile());
+      _scratchTtlDays = parseScratchTtlDays(getPawvyConfigFile());
     }
     return _scratchTtlDays;
   },
@@ -522,11 +522,11 @@ export function listKnownAgentIdsForSettings(): string[] {
   return filtered.filter((id) => includeSet.has(id)).sort();
 }
 
-export function updateClawboardAgentProfile(agentIdRaw: string, patch: AgentProfileEditablePatch): AgentProfileHint {
+export function updatePawvyAgentProfile(agentIdRaw: string, patch: AgentProfileEditablePatch): AgentProfileHint {
   const agentId = normalizeAgentId(agentIdRaw);
   if (!agentId) throw new Error('Invalid agent id');
 
-  const filePath = resolveClawboardAgentProfilesPath();
+  const filePath = resolvePawvyAgentProfilesPath();
   const existingRaw = readJsonObjectFile(filePath);
   const current = (
     existingRaw[agentId] && typeof existingRaw[agentId] === 'object' && !Array.isArray(existingRaw[agentId])
