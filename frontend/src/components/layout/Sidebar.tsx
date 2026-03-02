@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, ChevronDown, Folder, FolderPlus, Plus, X, User, Trash2, Pencil, Save, Sliders } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Folder, FolderPlus, Plus, User, Trash2, Pencil, Save, Sliders } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { api, type TaskStatus, type Project } from '../../lib/api';
 import { useAgents } from '../../hooks/useAgents';

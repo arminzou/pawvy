@@ -1159,7 +1159,7 @@ export function KanbanPage({
                 if (!trimmed) return;
 
                 const assignedToId =
-                  assignee === 'all' ? (myAgentId ?? null) : assignee === '' ? null : assignee;
+                  assignee === 'all' ? null : assignee === '' ? null : assignee;
 
                 await api.createTask({
                   title: trimmed,
