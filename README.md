@@ -1,150 +1,98 @@
 # Pawvy
 
-**A local-first command center for OpenClaw users.**
+**The task layer for human-agent teams.**
 
-Pawvy gives you a real-time Kanban board that tracks what you and your OpenClaw agents are working on across your workspace.
+Pawvy is an open-source task and project management tool built for developers who work alongside AI agents. Instead of checking in on your agents constantly, Pawvy gives them the context to start—and brings their work back to you at exactly the right moment.
 
-*For OpenClaw users who want visibility into what their agents are doing.*
+> Give your agents context. Close the loop together.
 
----
+![Pawvy](docs/images/pawvy-light.jpg)
 
-## ✨ What You Get
+## Why Pawvy
 
-- **Seamless OpenClaw Integration** — Just works with your existing OpenClaw setup
-- **Local-First** — Your data stays on your machine (SQLite)
-- **Kanban Board** — Drag-and-drop tasks, filter by project/branch/status
-- **Activity Feed** — See who did what, when, and where
-- **Multi-Project Discovery** — Auto-finds git projects in your workspace
-- **Real-Time Updates** — Changes appear instantly via WebSocket
+Most task tools were built for humans managing humans. Pawvy is built for a different reality: one human, one or more AI agents, and work that flows between them.
 
----
+Agents don't just execute tasks—they need to know *why* a task exists, *what done looks like*, and *when to surface work for your review*. Pawvy makes that handoff explicit, so nothing gets lost between your intent and the agent's execution.
 
-## 🚀 Quick Start (Docker)
+## ✨What You Can Do
 
-```bash
-# Clone and configure
-git clone https://github.com/zoulogic/pawvy.git
-cd pawvy
+### See Everything at a Glance
 
-# Copy environment template
-cp .env.example .env
-# Optional: edit .env (API key, non-standard paths, port)
+A kanban board and table view give you a live picture of what's in progress, what's waiting for review, and what's done. Switch views without losing your filters.
 
-# Start with Docker Compose
-docker compose up -d --build
-```
+![Kanban Board](docs/images/pawvy-dark.png)
 
-Dashboard: **http://localhost:3001**
+### Know what Needs Your Attention
 
-`compose.yaml` is local-first and works without Traefik or extra Docker networks.
-By default it reads OpenClaw from `$HOME/.openclaw` and projects from `$HOME/.pawvy/projects`.
+**My Queue** surfaces tasks that need a human decision right now—work your agents have completed and surfaced for review, plus anything explicitly assigned to you. One click, no hunting.
 
-### Reverse Proxy (Traefik)
+![My Queue](docs/images/pawvy-table.png)
 
-Use the optional override file when you already run Traefik:
+### Give Agents Real Context
 
-```bash
-# one-time (if missing)
-docker network create proxy
-
-# start with Traefik labels + external proxy network
-docker compose -f compose.yaml -f compose.traefik.yaml up -d --build
-```
-
-Set `PAWVY_HOST` and optional `TRAEFIK_*` variables in `.env` for your environment.
-
----
-
-## 🚀 Local Development
-
-```bash
-# Clone and go
-git clone https://github.com/zoulogic/pawvy.git
-cd pawvy
-
-# Install all deps and initialize DB
-pnpm run init
-
-# Start both backend + frontend
-pnpm run dev
-```
-
-Open **http://localhost:5173** — API runs on port 3001.
-
-### Mobile / LAN Dev
-
-If desktop works but mobile gets stuck in `reconnecting`, point frontend directly to backend with your LAN IP.
-
-In `frontend/.env.local`:
-
-```env
-API_BASE=http://<your-lan-ip>:3001
-WS_BASE=ws://<your-lan-ip>:3001/ws
-PAWVY_API_KEY=<same as backend>
-```
-
-Example:
-
-```env
-API_BASE=http://192.168.20.10:3001
-WS_BASE=ws://192.168.20.10:3001/ws
-PAWVY_API_KEY=replace-with-strong-key
-```
-
-Then restart frontend dev server.
-
-### Agent Include Filter
-
-If you want Pawvy to show only specific agents (Arcade + real-time status events), set:
-
-```env
-PAWVY_AGENTS_INCLUDE=tee,fay
-```
-
-You can also configure this in `~/.pawvy/config.json`:
-
-```json
-{
-  "agents": {
-    "include": ["tee", "fay"]
-  }
-}
-```
-
-Environment variable takes precedence over config file.
-
----
-
-## 🧩 Why Pawvy?
-
-OpenClaw agents work around your workspace, but their activity can be hard to track. You have no visibility into what they're doing until something breaks or gets committed.
-
-Pawvy watches your OpenClaw agents and projects together, so you get:
-- **Visibility** into agent activity (tasks, sessions, commits)
-- **Context-aware views** (filter by branch or worktree)
-- **One board for everything** — no more jumping between project folders
-
----
+Attach reference docs, acceptance criteria, and scope notes directly to tasks. Your agents read the task and start—no lengthy prompts, no repeated explanations.
 
 ## 🛠 Tech Stack
 
 - **Backend:** Node.js + Express + SQLite + WebSocket
 - **Frontend:** React + TypeScript + Tailwind CSS + @dnd-kit
 
----
+## 🚀 Quickstart
+
+**Prerequisites:** Node.js 22+, pnpm
+
+```bash
+# Clone and install
+git clone https://github.com/arminzou/pawvy.git
+cd pawvy
+pnpm install
+
+# Start development server
+pnpm dev
+```
+
+Open `http://localhost:5173`—backend runs on port 3001.
+
+**With Docker:** see [docker-compose setup →](docs/docker.md)
+
+## 🧩 OpenClaw Integration
+
+Pawvy is built to work with [OpenClaw](https://github.com/openclaw/openclaw). Your agents can create tasks, update status, and surface work for review—all through the Pawvy API or the built-in OpenClaw skill.
+
+```bash
+# Install the Pawvy skill in your OpenClaw workspace
+# Then agents can: create tasks, update status, list their queue
+```
+
+See [OpenClaw integration guide →](docs/openclaw-integration.md)
+
+## Common Workflows
+
+- **Agent creates a task** → populates context → surfaces for your review → you approve and close the loop
+- **You create a task** → agent picks it up → does the work → moves to review → you approve
+- **Check My Queue** → see everything needing your attention in one place → act or send back
+
+[Full workflow guide →](docs/agent-design.md)
+
+## Roadmap
+
+**v0.1.0 (current)**—Kanban board, table view, projects, My Queue, agent API, OpenClaw integration
+
+**v1.0.0 (in design)**—Draft states, context anchors, `pending_approval` flow, review notes with versioning, actor-aware transition enforcement. Full agent-human approval loop.
+
+See [ROADMAP.md](ROADMAP.md) for details.
 
 ## 🤝 Contributing
 
-PRs welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
+Contributions welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
 
----
-
-## 📦 Roadmap
-
-See [ROADMAP.md](./ROADMAP.md) for what's next.
-
----
+```bash
+git clone https://github.com/arminzou/pawvy.git
+cd pawvy
+pnpm install
+pnpm dev
+```
 
 ## 📜 License
 
-MIT — see [LICENSE](./LICENSE)
+MIT—see [LICENSE](LICENSE)
