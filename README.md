@@ -61,6 +61,16 @@ Open `http://localhost:5173`—backend runs on port 3001.
 
 **With Docker:** see [docker-compose setup →](docs/docker.md)
 
+**Mobile / LAN access:** if desktop works but mobile gets stuck reconnecting, point the frontend directly to your backend's LAN IP. In `frontend/.env.local`:
+
+```bash
+API_BASE=http://192.168.20.10:3001
+WS_BASE=ws://192.168.20.10:3001/ws
+PAWVY_API_KEY=your-api-key
+```
+
+Then restart the dev server.
+
 ## 🧩 OpenClaw Integration
 
 Pawvy is built to work with [OpenClaw](https://github.com/openclaw/openclaw). Your agents can create tasks, update status, and surface work for review—all through the Pawvy API or the built-in OpenClaw skill.
