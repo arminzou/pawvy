@@ -1,114 +1,91 @@
-# Roadmap — Pawvy 🗺
+# Roadmap
 
-This document is the living plan for Pawvy. It tracks where we've been and where we're going.
-
-## ✅ Completed Phases (Archived)
-
-| Phase | Focus |
-|-------|-------|
-| Phase 1 | Project Foundation (Node/Express/SQLite) |
-| Phase 2 | Frontend MVP (React + Kanban) |
-| Phase 3 | UI Redesign (Tailwind, Asana-ish) |
-| Phase 4-7 | UI Polish (bulk actions, shortcuts, saved views, responsive) |
-| Phase 8 | Multi-Project Hub (auto-discovery, cross-project) |
-| Phase 9 | Backend Clean Architecture (TypeScript, services, repos) |
-| Phase 10 | Frontend Clean Architecture (page-centered structure) |
+Pawvy is in active development. This document tracks what's shipped and what's next.
 
 ---
 
-## 🚧 Phase 11: OpenClaw Integration (Completed ✅)
+## v0.1.0 — Current
 
-*Making Pawvy "Just Work" with OpenClaw.*
+The foundation. Everything you need to run a human-agent workflow.
 
-### Documentation
-
-See `docs/` for detailed guides:
-- [`docs/openclaw-integration.md`](docs/openclaw-integration.md) — WebSocket, webhook system, agent component
-- [`docs/openclaw-auto-detect.md`](docs/openclaw-auto-detect.md) — Auto-detect workspace, agent discovery
-- [`docs/auto-generate-api-key.md`](docs/auto-generate-api-key.md) — Auto-generated API key mechanism
-- [`docs/pawvy-agent-plugin.md`](docs/pawvy-agent-plugin.md) — Native plugin for accurate agent lifecycle tracking
-
-### Features Delivered
-
-| Feature | Status |
-|---------|--------|
-| Auto-detect OpenClaw workspace | ✅ |
-| Auto-generate and store API key | ✅ |
-| Activity-reporting skill | ✅ |
-| Real-time session stream (WebSocket) | ✅ |
-| Agent presence display | ✅ |
-| Native OpenClaw plugin for lifecycle | ✅ |
-
-### Native Plugin for Real-Time Agent Status
-
-Replaced the external `pawvy-pulse` hook with a native OpenClaw plugin (`pawvy-agent`) that subscribes to agent lifecycle events via `api.on()`:
-
-- `before_agent_start` → Thinking (modifying hook — 3s fetch timeout so it never delays agents)
-- `agent_end` + idle timer → Idle
-- `session_start` → Idle (if not mid-run)
-- `gateway_start` / `gateway_stop` → Online / Offline
-
-Plugin loads directly from `extensions/pawvy-agent/` via `plugins.load.paths` — no copy step needed. Uses `api.logger` so lifecycle events appear in `openclaw logs`. See [`docs/pawvy-agent-plugin.md`](docs/pawvy-agent-plugin.md) for full details and debug guide.
-
-### Known Issues (Phase 11.1)
-
-- [ ] **Agent not updating in UI** — WebSocket connection issue
-  - Frontend connects to `ws://localhost:5173/ws` but needs `ws://localhost:3001/ws`
-  - Fix: Set `VITE_WS_BASE=ws://localhost:3001/ws` in frontend environment
-  - Alternative: Use Vite proxy (`/ws` → backend) - not working correctly
-- [ ] **Frontend tests** — Added `AgentStatusRow.test.tsx` for UI testing
-- [x] **Webhook field mapping** — Fixed to handle `agentId`/`event` fields correctly
+- **Kanban + table view** — see all work at a glance, switch views without losing filters
+- **Multi-project support** — auto-discovery from your workspace, manual registration for external directories
+- **My Queue** — one-click view of everything needing your attention right now
+- **Inbox** — separate space for personal reminders that agents never touch
+- **Context anchors** — every agent task resolves to a filesystem path; agents always have grounded context
+- **Agent API** — agents can create tasks, update status, and list their queue
+- **OpenClaw integration** — real-time agent presence (thinking / idle / offline) via native plugin
 
 ---
 
-## 🚧 Phase 12: Real-Time Awareness (Medium Priority)
+## v1.0.0 — In Design
 
-*See what agents are doing, as they do it.*
+The human-approval loop. Making every handoff between human and agent explicit.
 
-### Checklist
+### New Status Lifecycle
 
-#### 3. Real-Time Session Stream
-- [x] OpenClaw emits events via internal hooks (command:new, message:received, etc.)
-- [x] Pawvy webhook receives events
-- [ ] Frontend receives WebSocket broadcast — **BLOCKED by Phase 11.1 WebSocket issue**
+```
+draft → pending_approval → backlog → in_progress → review → done
+             ↓ (rejected)                  ↑_____________↓ (rework)
+           draft                        in_progress
+```
 
-#### 4. Context Awareness
-- [ ] Show "Tee is working on task #75"
-- [ ] Link sessions to tasks automatically
-- [ ] Branch/worktree context in activity feed
+| Status | Owned by | Meaning |
+|--------|----------|---------|
+| `draft` | Agent | Context being gathered; not ready for work |
+| `pending_approval` | Human | Agent surfaced context; human reviews and approves |
+| `backlog` | Human | Approved and defined; waiting for human start signal |
+| `in_progress` | Agent | Agent actively working |
+| `review` | Human | Agent surfaced work; human inspects and decides |
+| `done` | Human | Human approved; loop closed |
+
+### Task Creation Flows
+
+**Human-initiated:** Human creates a task with rough intent → agent gathers context → agent surfaces for human approval → human approves → work begins.
+
+**Agent-initiated:** Agent identifies a task need, interviews the human, populates full context upfront → agent surfaces for human approval → human approves → work begins.
+
+Both flows require human approval of context before a task enters `backlog`. Neither side can skip the other.
+
+### Context Fields
+
+Tasks carry structured context so agents can start confidently without needing a separate prompt:
+
+- **`context_anchor`** — link to the primary reference (spec doc, GitHub issue, Obsidian note)
+- **`acceptance_criteria`** — concrete definition of done; required before `pending_approval`
+- **`context_notes`** — why the task exists, key constraints, scope decisions
+
+### Review Notes
+
+Structured handoff notes between agent and human. Each cycle's note is archived before the next begins — a complete, append-only history of every handoff on the task.
+
+### Actor-Aware Transitions
+
+The backend enforces who can move a task to which status. Agents cannot approve their own work. Humans cannot be skipped. Violations return `403`.
+
+### Updated Board
+
+Five columns. `pending_approval` and `review` are grouped into a single **Awaiting** column — cards carry a badge (`Context` or `Work`) indicating what kind of review is needed and what action to take.
+
+```
+Draft  |  Backlog  |  In Progress  |  Awaiting  |  Done
+```
+
+### Updated My Queue
+
+Surfaces `pending_approval` (context to approve) and `review` (work to approve) alongside tasks explicitly assigned to you.
 
 ---
 
-## 🎯 Phase 13: Active Docs (Lower Priority)
+## Backlog
 
-*Transform Docs from passive file list to active participant.*
-
-### Checklist
-
-#### 5. Task-Doc Linkage
-- [ ] Attach "Reference Docs" to a Task
-
-#### 6. Doc Intelligence
-- [ ] Agent-generated summaries (TL;DR)
-- [ ] Stale Doc Alerts: flag outdated docs vs recent code changes
-- [ ] Milestone Events: promote Vision/Roadmap updates to high-priority activity
+- **Session linking** — show which task an agent is currently working on, in real time
+- **Active docs** — attach reference docs to tasks; agent-generated summaries; stale doc alerts
+- **Advanced search** — filter by `assignee:fay status:review` and similar operators
+- **Test coverage** — Playwright E2E, expanded backend unit tests
 
 ---
 
-## 🧪 Validation Track (Deferred)
+## Contributing
 
-Testing and debugging — deferred until Phase 11 stabilizes.
-
-- [ ] Expand backend unit tests (Vitest): tasks, projects, activities, docs
-- [ ] Run backend smoke test + API health
-- [ ] Add Playwright E2E (drag/drop + keyboard flows)
-- [ ] Manual UI regression: board load, drag/drop, create/edit task, project switch, activity feed
-- [ ] Verify VS Code debugging configs (backend + frontend)
-- [ ] Fix any regressions found
-
----
-
-## Open Questions
-
-- Advanced search operators: `assignee:tee status:done` syntax
-- Deploy sync strategy: `git pull` vs `reset --hard`
+See [CONTRIBUTING.md](CONTRIBUTING.md) to get involved.
