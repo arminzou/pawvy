@@ -1,8 +1,6 @@
 {
     "category_defaults": {
         "openclaw": "~/.openclaw"
-        // "infra": "~/projects/infrastructure",
-        // "docs": "~/notes/product-docs"
     },
     "scratch_root": "~/.local/share/pawvy/_misc",
     "allow_scratch_fallback": true,
